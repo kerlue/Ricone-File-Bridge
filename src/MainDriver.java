@@ -14,7 +14,7 @@ public class MainDriver {
 		config.getSftpUsername()+" " +
 		config.getSftpPassord()+" " +
 		config.isZipEnabled()+" " +
-		config.getZipTitle()+" It Works! " +
+		config.getZipTitle()+" It Works! yup " +
 		config.getZipMode());
 		 
 			
