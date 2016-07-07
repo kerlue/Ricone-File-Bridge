@@ -1,7 +1,7 @@
 /*////////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date: 7/7/2016
- * Version: 0.1.1
+ * Version: 0.1.1c
  * Updated: 7/7/2016
 */////////////////////////////////////////////////
 
@@ -69,10 +69,10 @@ class Data {
 
 
 public class Main {
-	static final String authUrl= "AUTH URL";        
-    static final String clientId= "YOUR USERNAME";
-    static final String clientSecret = "YOUR PASSWORD";
-    static final String providerId = "sandbox";
+	static final String authUrl= "https://auth.ricone.org/login";        
+    static final String clientId= "RICOneFileBridge";
+    static final String clientSecret = "";
+    static final String providerId = "RICOne";
     static final int navigationPageSize = 1;
 
     // Simple method designed solely to take input from a text file and return it seperated by line.
@@ -158,7 +158,8 @@ public class Main {
     
     
     public static void main(String[] args) {
-		//Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
+    	System.out.println("Start Program");
+		Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
 	        	
     	String c_file = "";
 		
@@ -183,17 +184,25 @@ public class Main {
 		
 		
 		System.out.println("Start");
-		for (ArrayList<String> i : dat) {
+/*		for (ArrayList<String> i : dat) {
 			if (i.toArray(new String[0])[0].equals("File") || i.toArray(new String[0])[0].equals("file")) {
-				System.out.println("This is a file name: "+i.toArray(new String[0])[1]+"");				
+				//System.out.println("This is a file name: "+i.toArray(new String[0])[1]+"");				
 			} else {
-				//for(Endpoint e : auth.getEndpoints(providerId)) {
-				//	XPress xPress = new XPress(auth.getToken(), e.getHref());
-				//	FunctCaller(i.toArray(new String[0])[1], xPress);
-			    //} 
-				System.out.println(".get"+i.toArray(new String[0])[1]+"()");
+				for(Endpoint e : auth.getEndpoints(providerId)) {
+					XPress xPress = new XPress(auth.getToken(), e.getHref());
+//					FunctCaller(i.toArray(new String[0])[1], xPress);
+					XLeas_GetXLeas(xPress);
+			    } 
+				//System.out.println(".get"+i.toArray(new String[0])[1]+"()");
 			}
-		}
+		}*/
+		
+		for(Endpoint e : auth.getEndpoints(providerId)) {
+			System.out.println("In loop");
+			XPress xPress = new XPress(auth.getToken(), e.getHref());
+			XLeas_GetXLeas(xPress);
+	    } 
+		
 		System.out.println("Finish");		
 		
 				
@@ -208,6 +217,7 @@ public class Main {
 
 	public static void XLeas_GetXLeas(XPress xPress)
 	{
+		System.out.println("here");
 		if(xPress.getXLeas().getData() != null)
 		{
 			for (XLeaType lea : xPress.getXLeas().getData())
