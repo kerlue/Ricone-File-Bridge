@@ -1,11 +1,15 @@
-Jul 06, 2016 4:02:46 PM GlobalUtilities logInfo
+Jul 07, 2016 2:49:52 PM GlobalUtilities logInfo
 INFO: Loading configuration settings...
-Jul 06, 2016 4:02:46 PM GlobalUtilities logInfo
+Jul 07, 2016 2:49:52 PM GlobalUtilities logInfo
 INFO: Configuration settings loaded..
 Validating settings...
-Jul 06, 2016 4:02:46 PM GlobalUtilities logWarning
+Jul 07, 2016 2:49:52 PM GlobalUtilities logWarning
 WARNING: Incorrect output format! Using CSV as default.
-Jul 06, 2016 4:02:46 PM GlobalUtilities logWarning
-WARNING: Incorrect output path! Using C:\Users\DMCINNIS\workspace2\FileBridge as default.
-Jul 06, 2016 4:02:46 PM GlobalUtilities logInfo
+Jul 07, 2016 2:49:52 PM GlobalUtilities logWarning
+WARNING: Incorrect output destination! Using local as default.
+Jul 07, 2016 2:49:52 PM GlobalUtilities logWarning
+WARNING: No path specified! Using C:\git\Ricone-File-Bridge as default.
+Jul 07, 2016 2:49:52 PM GlobalUtilities logInfo
 INFO: Settings validated...
+Jul 07, 2016 2:49:52 PM GlobalUtilities logError
+SEVERE: Failed to create folder

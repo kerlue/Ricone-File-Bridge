@@ -1,3 +1,11 @@
+/**
+ * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
+ * @version     1.0
+ * @since       Jul 7, 2016
+ * Filename		GlobalUtilities.java
+ */
+
+
 import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -6,6 +14,7 @@ import java.util.logging.SimpleFormatter;
 public class GlobalUtilities {
     private static Logger LOGGER = Logger.getLogger("File Bridge");
 	private static boolean shouldLog;
+	final static String LOCAL="local";
    
 	
 	public static void enableLogging(boolean val) {

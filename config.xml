@@ -20,8 +20,12 @@
 	         <output_export>SFTP</output_export>
 	         
 	         <!--Enter output destination path (ex: C:\Users\Desktop or sftp.pifdata.net )-->
-	         <output_files_destination></output_files_destination>
+	         <output_path></output_path>
 	         
+	          <!--Enter output folder title (ex: Districts )-->
+	         <output_folder_title></output_folder_title>
+	         
+        	         
 	         <!--If exporting files to SFTP enter port number-->
 	         <sftp_port></sftp_port>
 	         
@@ -37,9 +41,6 @@
          <zip_settings>        
 	         <!--zip output files requested (true or false)-->
 	         <zip_enabled>false</zip_enabled>
-	        
-	         <!--If zip requested then enter desired title (Optional) -->
-	         <zip_file_title>true</zip_file_title>
 	        
 	         <!--If zip requested then enter mode (Binary or ASCII)-->
 	         <zip_file_mode>Binary</zip_file_mode>   

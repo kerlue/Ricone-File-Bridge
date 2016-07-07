@@ -1,12 +1,17 @@
-import java.io.File;
-import java.io.IOException;
+/**
+ * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
+ * @version     1.0
+ * @since       Jul 7, 2016
+ * Filename		LoadConfiguration.java
+ */
+
+
+import java.io.File; 
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.DocumentBuilderFactory; 
 
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Document; 
 
 public class LoadConfiguration extends Configuration {
 	private Document document;
@@ -42,12 +47,12 @@ public class LoadConfiguration extends Configuration {
     	 sftpPort = getTextContent("sftp_port");
     	 sftpUsername = getTextContent("sftp_username");
     	 sftpPassword = getTextContent("sftp_password");
-    	 zipTitle = getTextContent("zip_file_title");
+    	 outputFolderTitle = getTextContent("output_folder_title");
     	 zipMode = getTextContent("zip_file_mode");
     	 zipEnabled = (getTextContent("zip_enabled").contains("true"));
     	 outputSchema = getTextContent("output_schema");
    	     outputExport = getTextContent("output_export");
-   	     outputPath = getTextContent("output_files_destination");
+   	     outputPath = getTextContent("output_path");
     	 
           if(!(outputSchema.matches("csv")|| 
         	   outputSchema.matches("xml")||
@@ -66,10 +71,10 @@ public class LoadConfiguration extends Configuration {
           
           if(outputPath.isEmpty()){
             	
-            	  GlobalUtilities.logWarning("No path specified! Using "+System.getProperty("user.dir")
+            	  GlobalUtilities.logWarning("No path specified! Using "+ System.getProperty("user.dir")
             	  + " as default.");
 
-                  outputPath = "local";			
+                  outputPath = System.getProperty("user.dir");			
     	   } 
           
           if(outputExport.matches("sftp")){
@@ -100,8 +105,17 @@ public class LoadConfiguration extends Configuration {
 	}
 	
 	private String getTextContent(String tagId) {
-		return document.getElementsByTagName(tagId).item(0)
-				.getTextContent().trim().toLowerCase();
+		
+		try{
+			return (document.getElementsByTagName(tagId).item(0)
+			.getTextContent());
+			
+		}catch(Exception e){
+			GlobalUtilities.logError("Incorrect configuration tag...");
+			System.exit(1);			
+			return "null";
+		}
+		 
 	}
 
 	

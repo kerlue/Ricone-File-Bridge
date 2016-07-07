@@ -1,9 +1,10 @@
 
-import java.io.IOException;
-
-import java.io.File;
-
-
+/**
+ * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
+ * @version     1.0
+ * @since       Jul 7, 2016
+ * Filename		Configuration.java
+ */
 
 
 public abstract class Configuration {
@@ -15,7 +16,7 @@ public abstract class Configuration {
 	 protected String sftpPort;
 	 protected String sftpUsername;
 	 protected String sftpPassword;
-	 protected String zipTitle;
+	 protected String outputFolderTitle;
 	 protected boolean zipEnabled;
 	 final String CONF_FILE = "config.xml";
 	
@@ -94,8 +95,8 @@ public abstract class Configuration {
 	 * @param Returns zip title from configuration settings .
 	 */
 	
-	public String getZipTitle() {
-		return this.zipTitle;
+	public String getOutputFolderTitle() {
+		return this.outputFolderTitle;
 	}
 
 	 
