@@ -99,7 +99,7 @@ public class Main {
 	public static List<ArrayList<String>> ParseFile(List<String> file_data) {
 		List<ArrayList<String>> parsed_data = new ArrayList<ArrayList<String>>();
 		for (int i=0; i < file_data.size(); ++i) { // loop through all lines in the input
-			System.out.println(i+ " " + file_data.toArray()[i]);
+			//System.out.println(i+ " " + file_data.toArray()[i]);
 			int temp = 0;
 			ArrayList<String> t_list = new ArrayList<String>();
 			for (int j=0; j < file_data.toArray(new String[0])[i].length(); ++j) { // loop through all letters on the line and split at spaces
@@ -184,11 +184,15 @@ public class Main {
 		
 		System.out.println("Start");
 		for (ArrayList<String> i : dat) {
-			//for(Endpoint e : auth.getEndpoints(providerId)) {
-			//	XPress xPress = new XPress(auth.getToken(), e.getHref());
-			//	FunctCaller(i.toArray(new String[0])[1], xPress);
-		    //} 
-			System.out.println(".get"+i.toArray(new String[0])[1]+"()");
+			if (i.toArray(new String[0])[0].equals("File") || i.toArray(new String[0])[0].equals("file")) {
+				System.out.println("This is a file name: "+i.toArray(new String[0])[1]+"");				
+			} else {
+				//for(Endpoint e : auth.getEndpoints(providerId)) {
+				//	XPress xPress = new XPress(auth.getToken(), e.getHref());
+				//	FunctCaller(i.toArray(new String[0])[1], xPress);
+			    //} 
+				System.out.println(".get"+i.toArray(new String[0])[1]+"()");
+			}
 		}
 		System.out.println("Finish");		
 		
