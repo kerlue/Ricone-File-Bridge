@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configSettings>
+
+	<!--Input requirements-->
+	<input_settings>
+	     
+	</input_settings>
+	
+	<!--out requirements-->
+	
+	<output_settings>
+	
+	     <!--Output File Format (CSV, XML or JSON)-->
+         <output_schema>hj</output_schema> 
+         
+         <!--output destination-->      
+         <output_destination>
+            
+             <!--Enter output destination (local or SFTP)-->
+	         <output_export>SFTP</output_export>
+	         
+	         <!--Enter output destination path (ex: C:\Users\Desktop or sftp.pifdata.net )-->
+	         <output_files_destination></output_files_destination>
+	         
+	         <!--If exporting files to SFTP enter port number-->
+	         <sftp_port></sftp_port>
+	         
+	         <!--If exporting files to SFTP enter username-->
+	         <sftp_username></sftp_username>
+	         
+	          <!--If exporting files to SFTP enter password-->
+	         <sftp_password></sftp_password>
+	         
+         </output_destination>
+         
+         
+         <zip_settings>        
+	         <!--zip output files requested (true or false)-->
+	         <zip_enabled>false</zip_enabled>
+	        
+	         <!--If zip requested then enter desired title (Optional) -->
+	         <zip_file_title>true</zip_file_title>
+	        
+	         <!--If zip requested then enter mode (Binary or ASCII)-->
+	         <zip_file_mode>Binary</zip_file_mode>   
+	            
+         </zip_settings>
+         
+    </output_settings>
+    
+</configSettings>

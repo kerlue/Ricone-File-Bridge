@@ -1,0 +1,11 @@
+Jul 06, 2016 4:02:46 PM GlobalUtilities logInfo
+INFO: Loading configuration settings...
+Jul 06, 2016 4:02:46 PM GlobalUtilities logInfo
+INFO: Configuration settings loaded..
+Validating settings...
+Jul 06, 2016 4:02:46 PM GlobalUtilities logWarning
+WARNING: Incorrect output format! Using CSV as default.
+Jul 06, 2016 4:02:46 PM GlobalUtilities logWarning
+WARNING: Incorrect output path! Using C:\Users\DMCINNIS\workspace2\FileBridge as default.
+Jul 06, 2016 4:02:46 PM GlobalUtilities logInfo
+INFO: Settings validated...
