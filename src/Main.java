@@ -1,7 +1,8 @@
 /*////////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date: 7/7/2016
- * Version 0.1.1
+ * Version: 0.1.1
+ * Updated: 7/7/2016
 */////////////////////////////////////////////////
 
 import riconeapi.models.authentication.Endpoint;
