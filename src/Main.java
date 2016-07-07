@@ -1,7 +1,7 @@
 /*////////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date: 7/7/2016
- * Version 0.1
+ * Version 0.1.1
 */////////////////////////////////////////////////
 
 import riconeapi.models.authentication.Endpoint;
@@ -59,9 +59,10 @@ class Data {
 		this.test = t;
 	}
 	
-	String getStateProvinceId() {
-		return district_code;
-	}
+	
+//	String getStateProvinceId() {
+//		return district_code;
+//	}
 	
 }
 
@@ -72,20 +73,92 @@ public class Main {
     static final String clientSecret = "YOUR PASSWORD";
     static final String providerId = "sandbox";
     static final int navigationPageSize = 1;
-	
-	public void GetData(XPress xPress) {
+
+    // Simple method designed solely to take input from a text file and return it seperated by line.
+	public static List<String> ReadFile(String in_file) {
+		List<String> textData = new ArrayList<String>();
 		
+		try {
+			FileReader fr = new FileReader(in_file);
+			BufferedReader textReader = new BufferedReader(fr);
+			String t;
+			while ((t = textReader.readLine()) != null) {
+				textData.add(t);
+			}
+			
+			textReader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+				
+		return textData;
+	}
+	
+	// Method designed to take the data read in from a file and split it into meaningful segments
+	public static List<ArrayList<String>> ParseFile(List<String> file_data) {
+		List<ArrayList<String>> parsed_data = new ArrayList<ArrayList<String>>();
+		for (int i=0; i < file_data.size(); ++i) { // loop through all lines in the input
+			System.out.println(i+ " " + file_data.toArray()[i]);
+			int temp = 0;
+			ArrayList<String> t_list = new ArrayList<String>();
+			for (int j=0; j < file_data.toArray(new String[0])[i].length(); ++j) { // loop through all letters on the line and split at spaces
+				if (file_data.toArray(new String[0])[i].charAt(j) == ' ') {
+					t_list.add(file_data.toArray(new String[0])[i].substring(temp,j));
+					temp = j+1;
+				}
+			}
+			ArrayList<String> t_list2 = new ArrayList<String>();
+			t_list.add(file_data.toArray(new String[0])[i].substring(temp));
+			if (t_list.size() > 2) {
+				String t_string = t_list.toArray(new String[0])[1];
+				for (int j=2; j < t_list.size(); ++j) {
+					t_string += "().get" + t_list.toArray(new String[0])[j];
+				}
+				t_list2.add(t_list.toArray(new String[0])[0]);
+				t_list2.add(t_string);
+			} else {
+				t_list2 = t_list;
+			}
+			parsed_data.add(t_list2);
+		}
+		return parsed_data;
+	}
+	
+	//Method designed to take the strings of function names from the previous methods and use them to call the RICONE API for the needed data
+	public static void FunctCaller(String funct_name, XPress xPress) {
+		if(xPress.getXLeas().getData() != null)
+		{
+			for (XLeaType lea : xPress.getXLeas().getData())
+			{	
+				Method m;
+				try {
+					m = XLeaType.class.getDeclaredMethod("get"+funct_name);
+					System.out.println(m.invoke(lea));
+				} catch (NoSuchMethodException e) {
+					// TODO Auto-generated catch block
+					System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+					e.printStackTrace();
+				} catch (SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
     
     
     public static void main(String[] args) {
-//		 Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
-//	     for(Endpoint e : auth.getEndpoints(providerId)) {
-//	         XPress xPress = new XPress(auth.getToken(), e.getHref());
-//	         
-//	         XLeas_GetXLeas(xPress);
-//	     } 
-    	
+		//Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
+	        	
     	String c_file = "";
 		
 		if (args.length > 0) {
@@ -97,61 +170,34 @@ public class Main {
 		}
 		
 		System.out.println(c_file);
-
+		
 		List<String> textData = new ArrayList<String>();
+
+		textData = ReadFile(c_file);
 		
-		try {
-			FileReader fr = new FileReader(c_file);
-			BufferedReader textReader = new BufferedReader(fr);
-			String t;
-			while ((t = textReader.readLine()) != null) {
-				textData.add(t);
-			}
-			
-			textReader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		
+		List<ArrayList<String>> dat = new ArrayList<ArrayList<String>>();
+		
+		dat = ParseFile(textData);
+		
+		
+		System.out.println("Start");
+		for (ArrayList<String> i : dat) {
+			//for(Endpoint e : auth.getEndpoints(providerId)) {
+			//	XPress xPress = new XPress(auth.getToken(), e.getHref());
+			//	FunctCaller(i.toArray(new String[0])[1], xPress);
+		    //} 
+			System.out.println(".get"+i.toArray(new String[0])[1]+"()");
 		}
+		System.out.println("Finish");		
 		
-		for (int i=0; i < textData.size(); ++i) {
-			System.out.println(i+ " " + textData.toArray()[i]);
-		}
-		
-		
-		Data temp = new Data(5);
-		//System.out.println(temp.getInfo());
-		
-		
-		String t = "StateProvinceId";
-		
-		Method m;
-		try {
-			m = Data.class.getDeclaredMethod("get"+t);
-			System.out.println(m.invoke(temp));
-		} catch (NoSuchMethodException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Couldnt find " + t + "as a callable method. Check the spelling?");
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+				
 		
 			
 		
 		
 		
-		System.out.println("End of Program");
+		System.out.println("End of the Program");
     }
 
 
