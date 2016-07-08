@@ -19,9 +19,13 @@ public abstract class Configuration {
 	 protected String outputFolderTitle;
 	 protected boolean zipEnabled;
 	 final String CONF_FILE = "config.xml";
+	 protected String clientSecret;
+	 protected String navigationPageSize;
+	 protected String providerId;
+	 protected String clientId;
+	 protected String authUrl;
 	
-
-	
+  
 	/**
 	 * @param args void.
 	 * @param Returns export type. eg CSV, XML or JSON.
@@ -99,6 +103,26 @@ public abstract class Configuration {
 		return this.outputFolderTitle;
 	}
 
+	
+    public String getAuthUrl() {
+ 		return this.authUrl;
+ 	}
+
+     public String getClientId() {
+ 		return this.clientId;
+ 	}
+
+     public String getProviderId() {
+ 		return this.providerId;
+ 	}
+
+     public String getNavigationPageSize() {
+ 		return this.navigationPageSize;
+ 	}
+
+     public String getClientSecret() {
+ 		return this.clientSecret;
+ 	}
 	 
 	
 }
