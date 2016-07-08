@@ -73,7 +73,7 @@ public class Main {
 	static final String authUrl= "https://auth.ricone.org/login";        
     static final String clientId= "RICOneFileBridge";
     static final String clientSecret = "";
-    static final String providerId = "RICOneFileBridge";
+   // static final String providerId = "RICOneFileBridge";
     static final int navigationPageSize = 1;
 
     // Simple method designed solely to take input from a text file and return it seperated by line.
@@ -198,14 +198,15 @@ public class Main {
 			}
 		}*/
 		
-		//System.out.println("userinfo: " + auth.getUserInfo());
+		System.out.println("userinfo: " + auth.getUserInfo());
 		
-		//UserInfo user = auth.getUserInfo();
-		//System.out.println("endpoint: " + user.getEndpoint());
+		UserInfo user = auth.getUserInfo();
+		System.out.println("endpoint: " + user.getEndpoint());
 		
 		for(Endpoint e : auth.getEndpoints()) {
 			System.out.println("In loop");
 			XPress xPress = new XPress(auth.getToken(), e.getHref());
+			System.out.println(e.getHref());
 			xPress.getXLeas();
 			//XLeas_GetXLeas(xPress);
 	    } 
