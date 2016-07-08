@@ -44,6 +44,7 @@ public class LoadConfiguration extends Configuration {
     	
     	// check that the configuration output format is valid. 
     	
+    	// assign values from config file to variable
     	 sftpPort = getTextContent("sftp_port");
     	 sftpUsername = getTextContent("sftp_username");
     	 sftpPassword = getTextContent("sftp_password");
@@ -51,9 +52,16 @@ public class LoadConfiguration extends Configuration {
     	 zipMode = getTextContent("zip_file_mode");
     	 zipEnabled = (getTextContent("zip_enabled").contains("true"));
     	 outputSchema = getTextContent("output_schema");
-   	     outputExport = getTextContent("output_export");
-   	     outputPath = getTextContent("output_path");
+   	     outputExport = getTextContent("output_export");  	    
+   	     outputPath = getTextContent("output_path"); 	
+   	     clientSecret = getTextContent("client_secret");
+ 	     navigationPageSize = getTextContent("navigation_page_size");
+ 	     providerId = getTextContent("provider_id");
+ 	     clientId = getTextContent("client_id");
+ 	     authUrl = getTextContent("auth_url");
     	 
+ 	     // check that config file settings are valid.
+ 	     
           if(!(outputSchema.matches("csv")|| 
         	   outputSchema.matches("xml")||
         	   outputSchema.matches("json"))){
@@ -98,6 +106,30 @@ public class LoadConfiguration extends Configuration {
         		  return false;
         	  }
         	  }
+          
+          if(navigationPageSize.isEmpty()){
+        	  navigationPageSize = "1";
+        	  GlobalUtilities.logWarning("Navigation page size missing. using 1 as default value.. ");        	  
+          }
+          
+          if(authUrl.isEmpty()){
+        	  GlobalUtilities.logError("Authentication url missing!.. ");   
+        	  System.exit(1);
+          }
+          if(clientId.isEmpty()){
+        	  GlobalUtilities.logError("Client id missing.. ");   
+        	  System.exit(1);
+          }
+          if(providerId.isEmpty()){
+        	  GlobalUtilities.logError("Provider id url missing.. ");   
+        	  System.exit(1);
+          }
+          if(clientSecret.isEmpty()){
+        	  GlobalUtilities.logError("Password missing.. ");   
+        	  System.exit(1);
+          }
+          
+          
          
      	 GlobalUtilities.logInfo("Settings validated...");  
      	 
@@ -108,7 +140,7 @@ public class LoadConfiguration extends Configuration {
 		
 		try{
 			return (document.getElementsByTagName(tagId).item(0)
-			.getTextContent());
+			.getTextContent().trim());
 			
 		}catch(Exception e){
 			GlobalUtilities.logError("Incorrect configuration tag...");
