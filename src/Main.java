@@ -1,8 +1,8 @@
 /*////////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date: 7/7/2016
- * Version: 0.1.1c
- * Updated: 7/7/2016
+ * Version: 0.1.2
+ * Updated: 7/8/2016
 */////////////////////////////////////////////////
 
 import riconeapi.models.authentication.Endpoint;
@@ -85,7 +85,10 @@ public class Main {
 			BufferedReader textReader = new BufferedReader(fr);
 			String t;
 			while ((t = textReader.readLine()) != null) {
-				textData.add(t);
+				if (t.length() > 0) {
+					//System.out.println(t + t.length());
+					textData.add(t);
+				}
 			}
 			
 			textReader.close();
@@ -111,7 +114,7 @@ public class Main {
 			}
 			ArrayList<String> t_list2 = new ArrayList<String>();
 			t_list.add(file_data.toArray(new String[0])[i].substring(temp));
-			if (t_list.size() > 2) {
+			if (t_list.size() > 2 && !t_list.toArray(new String[0])[0].equals("file")) {
 				String t_string = t_list.toArray(new String[0])[1];
 				for (int j=2; j < t_list.size(); ++j) {
 					t_string += "().get" + t_list.toArray(new String[0])[j];
@@ -127,41 +130,256 @@ public class Main {
 	}
 	
 	//Method designed to take the strings of function names from the previous methods and use them to call the RICONE API for the needed data
-	public static void FunctCaller(String funct_name, XPress xPress) {
-		if(xPress.getXLeas().getData() != null)
-		{
-			for (XLeaType lea : xPress.getXLeas().getData())
-			{	
-				Method m;
-				try {
-					m = XLeaType.class.getDeclaredMethod("get"+funct_name);
-					System.out.println(m.invoke(lea));
-				} catch (NoSuchMethodException e) {
-					// TODO Auto-generated catch block
-					System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+	public static void FunctCaller(String funct_name, XPress xPress, String type) {
+		System.out.println(funct_name + " of type " + type);
+		type = "nothing"; // Delete this line once we can successfully connect to the API server
+		switch (type) {
+			case "Lea": {
+				if(xPress.getXLeas().getData() != null)
+				{
+					for (XLeaType lea : xPress.getXLeas().getData())
+					{	
+						Method m;
+						try {
+							m = XLeaType.class.getDeclaredMethod("get"+funct_name);
+							System.out.println(m.invoke(lea));
+						} catch (NoSuchMethodException e) {
+							// TODO Auto-generated catch block
+							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							e.printStackTrace();
+						} catch (SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 				}
 			}
+			case "School": {
+				if(xPress.getXSchools().getData() != null)
+				{
+					for (XSchoolType school : xPress.getXSchools().getData())
+					{	
+						Method m;
+						try {
+							m = XSchoolType.class.getDeclaredMethod("get"+funct_name);
+							System.out.println(m.invoke(school));
+						} catch (NoSuchMethodException e) {
+							// TODO Auto-generated catch block
+							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							e.printStackTrace();
+						} catch (SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			case "Calendar": {
+				if(xPress.getXCalendars().getData() != null)
+				{
+					for (XCalendarType cal : xPress.getXCalendars().getData())
+					{	
+						Method m;
+						try {
+							m = XCalendarType.class.getDeclaredMethod("get"+funct_name);
+							System.out.println(m.invoke(cal));
+						} catch (NoSuchMethodException e) {
+							// TODO Auto-generated catch block
+							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							e.printStackTrace();
+						} catch (SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			case "Course": {
+				if(xPress.getXCourses().getData() != null)
+				{
+					for (XCourseType var : xPress.getXCourses().getData())
+					{	
+						Method m;
+						try {
+							m = XCourseType.class.getDeclaredMethod("get"+funct_name);
+							System.out.println(m.invoke(var));
+						} catch (NoSuchMethodException e) {
+							// TODO Auto-generated catch block
+							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							e.printStackTrace();
+						} catch (SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			case "Roster": {
+				if(xPress.getXRosters().getData() != null)
+				{
+					for (XRosterType var : xPress.getXRosters().getData())
+					{	
+						Method m;
+						try {
+							m = XRosterType.class.getDeclaredMethod("get"+funct_name);
+							System.out.println(m.invoke(var));
+						} catch (NoSuchMethodException e) {
+							// TODO Auto-generated catch block
+							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							e.printStackTrace();
+						} catch (SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			case "Staff": {
+				if(xPress.getXStaffs().getData() != null)
+				{
+					for (XStaffType var : xPress.getXStaffs().getData())
+					{	
+						Method m;
+						try {
+							m = XStaffType.class.getDeclaredMethod("get"+funct_name);
+							System.out.println(m.invoke(var));
+						} catch (NoSuchMethodException e) {
+							// TODO Auto-generated catch block
+							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							e.printStackTrace();
+						} catch (SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			case "Student": {
+				if(xPress.getXStudents().getData() != null)
+				{
+					for (XStudentType var : xPress.getXStudents().getData())
+					{	
+						Method m;
+						try {
+							m = XStudentType.class.getDeclaredMethod("get"+funct_name);
+							System.out.println(m.invoke(var));
+						} catch (NoSuchMethodException e) {
+							// TODO Auto-generated catch block
+							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							e.printStackTrace();
+						} catch (SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			case "Contact": {
+				if(xPress.getXContacts().getData() != null)
+				{
+					for (XContactType var : xPress.getXContacts().getData())
+					{	
+						Method m;
+						try {
+							m = XContactType.class.getDeclaredMethod("get"+funct_name);
+							System.out.println(m.invoke(var));
+						} catch (NoSuchMethodException e) {
+							// TODO Auto-generated catch block
+							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							e.printStackTrace();
+						} catch (SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			default: {
+				//System.out.println("default case. Something went wrong");
+				System.out.println("");
+			}
 		}
+
 	}
     
     
     public static void main(String[] args) {
     	System.out.println("Start Program");
+    	System.out.println("Start auth");
 		Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
-	        	
+	    System.out.println("end auth");
     	String c_file = "";
 		
 		if (args.length > 0) {
@@ -185,18 +403,20 @@ public class Main {
 		
 		
 		System.out.println("Start");
-/*		for (ArrayList<String> i : dat) {
+		String xpress_type = "";
+		for (ArrayList<String> i : dat) {
 			if (i.toArray(new String[0])[0].equals("File") || i.toArray(new String[0])[0].equals("file")) {
-				//System.out.println("This is a file name: "+i.toArray(new String[0])[1]+"");				
+				System.out.println("This is a file name: "+i.toArray(new String[0])[1]+"");	
+				xpress_type = i.toArray(new String[0])[2];
 			} else {
-				for(Endpoint e : auth.getEndpoints(providerId)) {
+				for(Endpoint e : auth.getEndpoints()) {
 					XPress xPress = new XPress(auth.getToken(), e.getHref());
-//					FunctCaller(i.toArray(new String[0])[1], xPress);
-					XLeas_GetXLeas(xPress);
+					FunctCaller(i.toArray(new String[0])[1], xPress,xpress_type);
+//					XLeas_GetXLeas(xPress);
 			    } 
 				//System.out.println(".get"+i.toArray(new String[0])[1]+"()");
 			}
-		}*/
+		}
 		
 		System.out.println("userinfo: " + auth.getUserInfo());
 		
@@ -204,10 +424,8 @@ public class Main {
 		System.out.println("endpoint: " + user.getEndpoint());
 		
 		for(Endpoint e : auth.getEndpoints()) {
-			System.out.println("In loop");
 			XPress xPress = new XPress(auth.getToken(), e.getHref());
-			System.out.println(e.getHref());
-			xPress.getXLeas();
+			//xPress.getXLeas();
 			//XLeas_GetXLeas(xPress);
 	    } 
 		
