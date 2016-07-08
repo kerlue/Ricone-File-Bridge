@@ -1,3 +1,11 @@
+
+/**
+ * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
+ * @version     1.0
+ * @since       Jul 7, 2016
+ * Filename		Configuration.java
+ */
+
 import java.io.File;
 
 
@@ -5,34 +13,43 @@ public class ExportData {
 
 	public ExportData(LoadConfiguration config, String string) {
 		
-		setupOutputPath(config);
+		String outputPath = setupOutputPath(config);
 		//TODO: Write file to path
-		//TODO: SFTP is required
+		
+		if(config.getOutputExport() == GlobalUtilities.SFTP){
+			
+		}
+		else if (config.getOutputExport() == GlobalUtilities.LOCAL && config.isZipEnabled() == true){
+			new FolderZiper(outputPath);
+		}
 		
 	}
 
-	private boolean setupOutputPath(LoadConfiguration config) {
+	private String setupOutputPath(LoadConfiguration config) {
+
+				
+		String outputPath = (config.getOutputPath().isEmpty())? "":config.getOutputPath();
+		String outputFolderTitle = (config.getOutputFolderTitle().isEmpty())
+				? "SOME TITLE HERE":config.getOutputPath();
 		
-		if(config.getOutputExport() == GlobalUtilities.LOCAL){			
-			String outputPath = (config.getOutputPath().isEmpty())? "":config.getOutputPath();
-			String outputFolderTitle = (config.getOutputFolderTitle().isEmpty())
-					? "SOME TITLE HERE":config.getOutputPath();
+		File file = new File(outputPath+"/"+outputFolderTitle);
+		
+		if(file.exists())
+			file.delete();
+		
+		if (!file.mkdirs()) {
+			GlobalUtilities.logError("Failed to create folder");
+			System.exit(1);
+			return ""; 
 			
-			File file = new File(outputPath+"/"+outputFolderTitle);
-			
-			if (!file.mkdirs()) {
-				GlobalUtilities.logError("Failed to create folder");
-				return false;
-			}else{
-				GlobalUtilities.logInfo(file.getAbsolutePath()+" created sucessfully ");
-				return true;
-			}
-			
-		}else {
-			return false;
+		}else{
+			GlobalUtilities.logInfo(file.getAbsolutePath()+" created sucessfully ");
+			return file.getAbsolutePath();
 		}
-		
-		 
+			
 	}
+	
+	
+	
 
 }
