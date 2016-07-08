@@ -15,6 +15,7 @@ public class GlobalUtilities {
     private static Logger LOGGER = Logger.getLogger("File Bridge");
 	private static boolean shouldLog;
 	final static String LOCAL="local";
+	final static String SFTP="sftp";
    
 	
 	public static void enableLogging(boolean val) {
