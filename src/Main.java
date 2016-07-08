@@ -6,6 +6,7 @@
 */////////////////////////////////////////////////
 
 import riconeapi.models.authentication.Endpoint;
+import riconeapi.models.authentication.UserInfo;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -72,7 +73,7 @@ public class Main {
 	static final String authUrl= "https://auth.ricone.org/login";        
     static final String clientId= "RICOneFileBridge";
     static final String clientSecret = "";
-    static final String providerId = "RICOne";
+    static final String providerId = "RICOneFileBridge";
     static final int navigationPageSize = 1;
 
     // Simple method designed solely to take input from a text file and return it seperated by line.
@@ -197,10 +198,16 @@ public class Main {
 			}
 		}*/
 		
-		for(Endpoint e : auth.getEndpoints(providerId)) {
+		//System.out.println("userinfo: " + auth.getUserInfo());
+		
+		//UserInfo user = auth.getUserInfo();
+		//System.out.println("endpoint: " + user.getEndpoint());
+		
+		for(Endpoint e : auth.getEndpoints()) {
 			System.out.println("In loop");
 			XPress xPress = new XPress(auth.getToken(), e.getHref());
-			XLeas_GetXLeas(xPress);
+			xPress.getXLeas();
+			//XLeas_GetXLeas(xPress);
 	    } 
 		
 		System.out.println("Finish");		
@@ -217,11 +224,13 @@ public class Main {
 
 	public static void XLeas_GetXLeas(XPress xPress)
 	{
-		System.out.println("here");
+		System.out.println("here1");
 		if(xPress.getXLeas().getData() != null)
 		{
+			System.out.println("here2");
 			for (XLeaType lea : xPress.getXLeas().getData())
 			{	
+				System.out.println("here3");
 				System.out.println("refId: " + lea.getRefId());
 				System.out.println("leaName: " + lea.getLeaName());
 				System.out.println("leaRefId: " + lea.getLeaRefId());
