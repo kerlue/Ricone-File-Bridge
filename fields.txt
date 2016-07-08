@@ -1,4 +1,4 @@
-file CODE_DISTRICT.txt
+file CODE_DISTRICT.txt Lea
 district_code StateProvinceId
 district_name LeaName
 address_1 Address Line1
@@ -6,5 +6,3 @@ address_2 Address Line2
 city Address City
 state Address StateProvince
 zip Address PostalCode
-file SCHOOL.txt
-school_code ttttttttttt
