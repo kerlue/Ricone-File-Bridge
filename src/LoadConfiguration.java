@@ -70,8 +70,7 @@ public class LoadConfiguration extends Configuration {
         	  outputSchema = "csv";			
 		  }
           
-          if(!(outputExport.matches("local")||
-        		  outputExport.matches("sftp"))){
+          if((outputExport.matches("local")  || outputExport.matches("sftp")) == false){
             	
             	  GlobalUtilities.logWarning("Incorrect output destination! Using local as default.");
             	  outputExport = "local";			
@@ -129,8 +128,7 @@ public class LoadConfiguration extends Configuration {
         	  System.exit(1);
           }
           
-          
-         
+
      	 GlobalUtilities.logInfo("Settings validated...");  
      	 
 		return true;

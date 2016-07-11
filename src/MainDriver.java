@@ -1,3 +1,8 @@
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 public class MainDriver {
 	public static void main(String[] args){
@@ -10,7 +15,7 @@ public class MainDriver {
 		ExportData data = new ExportData(config, "");
 		
 		
-		/*System.out.println("--->>" + 
+		System.out.println("--->>" + 
 		config.getOutputSchema()  +" " +
 		config.getOutputExport()  +" " +		
 		config.getOutputPath() +" " +
@@ -20,7 +25,12 @@ public class MainDriver {
 		config.isZipEnabled()+" " +
 		config.getOutputFolderTitle()+" " +
 		config.getZipMode());
-		*/
+		
+		
+		
+		
+		System.out.println("Completed!");
+		/**/
 	}
 	
 	
