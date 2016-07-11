@@ -16,7 +16,7 @@ public class MainDriver {
 		
 		
 		System.out.println("--->>" + 
-		config.getOutputSchema()  +" " +
+		config.getOutputSchema()  +"-" +
 		config.getOutputExport()  +" " +		
 		config.getOutputPath() +" " +
 		config.getSftpPort()+" " +
