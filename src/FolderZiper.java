@@ -3,7 +3,7 @@
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
  * @version     1.0
  * @since       Jul 7, 2016
- * Filename		Configuration.java
+ * Filename		FolderZipper.java
  */
 
 import java.io.File;
@@ -19,9 +19,10 @@ public class FolderZiper {
 static public boolean zipFolder(String srcFolder, String destZipFile) {
     ZipOutputStream zip = null;
     FileOutputStream fileWriter = null;
+    
     try{
     	GlobalUtilities.logInfo("Zipping in progress..");
-    	
+    
     	fileWriter = new FileOutputStream(destZipFile);
         zip = new ZipOutputStream(fileWriter);
 	    addFolderToZip("", srcFolder, zip);
@@ -32,7 +33,7 @@ static public boolean zipFolder(String srcFolder, String destZipFile) {
 		  GlobalUtilities.logError("Failed to zip file..");
 		  return false;
 	 }
-
+    GlobalUtilities.logInfo("Zipping complete..");
     return true;
   }
 

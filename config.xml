@@ -1,61 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<configSettings>
-
-	<!--Input requirements-->
-	<input_settings>
-	
-	<authentication_settings> 
-	      <auth_url> </auth_url>
-	      <client_id> </client_id>
-	      <provider_id> </provider_id>
-	      <navigation_page_size>  </navigation_page_size>
-	      <client_secret> </client_secret>
-	         
-	</authentication_settings>
-	     
-	</input_settings>
-	
-	<!--out requirements-->
-	
-	<output_settings>
-	
-	     <!--Output File Format (CSV, XML or JSON)-->
-         <output_schema>hj</output_schema> 
-         
-         <!--output destination-->      
-         <output_destination>
-            
-             <!--Enter output destination (local or SFTP)-->
-	         <output_export>SFTP</output_export>
-	         
-	         <!--Enter output destination path (ex: C:\Users\Desktop or sftp.pifdata.net )-->
-	         <output_path>C:\Users\DMCINNIS\Desktop</output_path>
-	         
-	          <!--Enter output folder title (ex: Districts )-->
-	         <output_folder_title></output_folder_title>
-	         
-        	         
-	         <!--If exporting files to SFTP enter port number-->
-	         <sftp_port></sftp_port>
-	         
-	         <!--If exporting files to SFTP enter username-->
-	         <sftp_username></sftp_username>
-	         
-	          <!--If exporting files to SFTP enter password-->
-	         <sftp_password></sftp_password>
-	         
-         </output_destination>
-         
-         
-         <zip_settings>        
-	         <!--zip output files requested (true or false)-->
-	         <zip_enabled>true</zip_enabled>
-	        
-	         <!--If zip requested then enter mode (Binary or ASCII)-->
-	         <zip_file_mode>Binary</zip_file_mode>   
-	            
-         </zip_settings>
-         
-    </output_settings>
-    
-</configSettings>
+<?xml version="1.0" encoding="UTF-8"?><!--/** * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org> * @version     1.0 * @since       Jul 7, 2016 * Filename		config.xml */-->  <configSettings>	<!--Input requirements-->	<input_settings>		<authentication_settings> 	      <auth_url>test</auth_url>	      <client_id> test</client_id>	      <provider_id>test </provider_id>	      <navigation_page_size> test </navigation_page_size>	      <client_secret>test </client_secret>	</authentication_settings>		</input_settings>	<!--out requirements-->	<output_settings>	     <output_schema>csv</output_schema>  <!--Output File Format (CSV, XML or JSON)-->	                 <output_destination> <!--output destination-->                   <output_export>sftp</output_export><!--Enter output destination (local or SFTP)-->	            <output_path>0.0.0.0</output_path><!--Enter output destination path (ex: C:\Users\Desktop or sftp.pifdata.net )-->	            <output_folder_title>SCHOOL</output_folder_title><!--Enter output folder title (ex: Districts )-->	            <sftp_port>22</sftp_port> <!--If exporting files to SFTP enter port number-->	            <sftp_username>tester</sftp_username> <!--If exporting files to SFTP enter username-->	            <sftp_password>password</sftp_password> <!--If exporting files to SFTP enter password-->	        </output_destination>                      <zip_settings>        	            <zip_enabled>true</zip_enabled><!--zip output files requested (true or false)-->	            <zip_file_mode>Binary</zip_file_mode><!--If zip requested then enter mode (Binary or ASCII)-->	        </zip_settings>	                 </output_settings>    </configSettings>

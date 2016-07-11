@@ -51,8 +51,8 @@ public class LoadConfiguration extends Configuration {
     	 outputFolderTitle = getTextContent("output_folder_title");
     	 zipMode = getTextContent("zip_file_mode");
     	 zipEnabled = (getTextContent("zip_enabled").contains("true"));
-    	 outputSchema = getTextContent("output_schema");
-   	     outputExport = getTextContent("output_export");  	    
+    	 outputSchema = getTextContent("output_schema").toLowerCase();
+   	     outputExport = getTextContent("output_export").toLowerCase();  	    
    	     outputPath = getTextContent("output_path"); 	
    	     clientSecret = getTextContent("client_secret");
  	     navigationPageSize = getTextContent("navigation_page_size");
