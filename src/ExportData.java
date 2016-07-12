@@ -20,7 +20,7 @@ import com.jcraft.jsch.Session;
 
 public class ExportData {
 
-	public ExportData(LoadConfiguration config, String string) {
+	public ExportData(Configuration config, String string) {
 		
 		File file = setupOutputPath(config);
 	 
@@ -49,7 +49,7 @@ public class ExportData {
 		}
 	}
 
-	private void pushFileToSftpServer(String outputPath, LoadConfiguration config) {
+	private void pushFileToSftpServer(String outputPath, Configuration config) {
 		if(FolderZiper.zipFolder(outputPath, outputPath+".zip")){
 			// folder zipped successfully 
 			sftpUploader(config.getOutputPath(), 
@@ -80,7 +80,7 @@ public class ExportData {
 				}
 	}
 
-	private File setupOutputPath(LoadConfiguration config) {
+	private File setupOutputPath(Configuration config) {
 
 				
 		String outputPath = "";

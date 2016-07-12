@@ -9,9 +9,15 @@
 import java.io.File; 
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory; 
+import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.w3c.dom.Document; 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList; 
 
 public class LoadConfiguration extends Configuration {
 	private Document document;
@@ -27,10 +33,11 @@ public class LoadConfiguration extends Configuration {
 		
 		try {
 			db = dbf.newDocumentBuilder();
-			document = db.parse(file);
-			
+			document = db.parse(file);			
 			// Validate and Load settings into variables. 
-			validateSettings();
+			if(validateSettings()){
+				super.requiredJsonData = requiredDataToJSON(document);
+			}
 		
 		}catch (Exception e) {
 			GlobalUtilities.logError(e.getMessage());
@@ -38,7 +45,31 @@ public class LoadConfiguration extends Configuration {
 		}	 			
 	}
 	
-    private boolean validateSettings() {
+    private JSONObject requiredDataToJSON(Document document) throws DOMException, JSONException {
+    	    NodeList nodes = document.getElementsByTagName("required_data")
+    	    		   .item(0).getChildNodes();
+    	    
+    	    JSONObject obj = new JSONObject();
+    	    
+    	    
+    	    for(int i=0, j =0; i < nodes.getLength(); i++){
+    	    	if(nodes.item(i).getNodeType() == Node.ELEMENT_NODE){
+    	    		
+    	    		JSONObject tempObj = new JSONObject();
+    	    		tempObj.put("text_file_name", nodes.item(i).getNodeName());
+    	    		tempObj.put("colum_name", nodes.item(i).getAttributes().item(0).getTextContent());
+    	    		tempObj.put("required_data", nodes.item(i).getTextContent());    	    		
+    	    		obj.put(""+j, tempObj);
+    	    		j++;
+    	    	}
+    	    	
+    	    }
+    	     
+    	    return obj;
+	 
+	}
+
+	private boolean validateSettings() {
     	
     	GlobalUtilities.logInfo("Configuration settings loaded..\nValidating settings...");
     	
@@ -49,7 +80,6 @@ public class LoadConfiguration extends Configuration {
     	 sftpUsername = getTextContent("sftp_username");
     	 sftpPassword = getTextContent("sftp_password");
     	 outputFolderTitle = getTextContent("output_folder_title");
-    	 zipMode = getTextContent("zip_file_mode");
     	 zipEnabled = (getTextContent("zip_enabled").contains("true"));
     	 outputSchema = getTextContent("output_schema").toLowerCase();
    	     outputExport = getTextContent("output_export").toLowerCase();  	    

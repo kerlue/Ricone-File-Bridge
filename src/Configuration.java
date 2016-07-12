@@ -1,3 +1,8 @@
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONObject;
+import org.w3c.dom.Node;
 
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
@@ -9,7 +14,7 @@
 
 public abstract class Configuration {
 	
-	 protected String zipMode;
+
 	 protected String outputSchema;
 	 protected String outputExport;
 	 protected String outputPath;
@@ -24,6 +29,7 @@ public abstract class Configuration {
 	 protected String providerId;
 	 protected String clientId;
 	 protected String authUrl;
+	 public JSONObject requiredJsonData;
 	
   
 	/**
@@ -86,16 +92,6 @@ public abstract class Configuration {
 	
 	/**
 	 * @param args void.
-	 * @param Returns zip mode  (Binary or ASCII) eg .
-	 */
-	
-	public String getZipMode() {
-		return this.zipMode;
-	}
-
-
-	/**
-	 * @param args void.
 	 * @param Returns zip title from configuration settings .
 	 */
 	
@@ -123,6 +119,23 @@ public abstract class Configuration {
      public String getClientSecret() {
  		return this.clientSecret;
  	}
+     
+     public List<String> getTextTitle() {
+    	List<String> textFiles = new ArrayList<String>();
+    	
+    	 try{
+    		 for(int i=0; i < requiredJsonData.length(); i++){   			
+    		     JSONObject jsonObj = new JSONObject(requiredJsonData.get(""+i).toString());
+    		     textFiles.add(jsonObj.get("text_file_name").toString());
+    		 }
+    	 }catch(Exception e){
+    		 e.printStackTrace();
+    	 }
+    	 
+  		return textFiles;
+  	}
+      
+     
 	 
 	
 }
