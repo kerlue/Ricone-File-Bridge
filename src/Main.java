@@ -1,8 +1,8 @@
 /*////////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date Created: 7/7/2016
- * Version: 0.2.0
- * Updated: 7/11/2016
+ * Version: 0.3.0
+ * Updated: 7/13/2016
 */////////////////////////////////////////////////
 
 import riconeapi.models.authentication.Endpoint;
@@ -14,10 +14,14 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import riconeapi.common.Authenticator;
 import riconeapi.common.XPress;
+import riconeapi.common.Util;
 
 
 import riconeapi.models.xpress.XCalendarType;
@@ -46,30 +50,6 @@ import riconeapi.models.xpress.XTelephoneType;
 
 //import Authorizer;
 
-class Data {
-	String district_code = "test";
-	String district_name;
-	String address_1;
-	String address_2;
-	String city;
-	String state;
-	String zip;
-	
-	
-	int test=0;
-	
-	Data(int t) {
-		this.test = t;
-	}
-	
-	
-//	String getStateProvinceId() {
-//		return district_code;
-//	}
-	
-}
-
-
 public class Main {	
 	static final String authUrl= Authorizer.getURL();        
     static final String clientId= Authorizer.getID();
@@ -77,10 +57,14 @@ public class Main {
     static final String providerId = Authorizer.getProviderID();
     static final int navigationPageSize = Authorizer.getPageSize();
     
-    static String[] keywords = {"-file","-location"};
+    static String[] keywords = {"-file","-source"};
+    
+    static String[] refid;   // Identifies the location the data is being pulled from
+    static String ref_type; // Should be either Lea or School
+    static int[] grade_nums; // optional param
 
     // Simple method designed solely to take input from a text file and return it seperated by line.
-	public static List<ArrayList<String>> ReadFile(String in_file, boolean parsetoo) {
+	public static List<ArrayList<ArrayList<String>>> ReadFile(String in_file, boolean parsetoo) {
 		ArrayList<String> textData = new ArrayList<String>();
 		
 		try {
@@ -99,21 +83,23 @@ public class Main {
 			e.printStackTrace();
 		}
 				
-		System.out.println(textData);
 		
 		if (parsetoo) { // should the data just be read in or should it be directed to the parser function
 			return ParseFile(textData);
 		} else {
-			List<ArrayList<String>> t2 = new ArrayList<ArrayList<String>>();
+			ArrayList<ArrayList<String>> t2 = new ArrayList<ArrayList<String>>();
+			List<ArrayList<ArrayList<String>>> t3 = new ArrayList<ArrayList<ArrayList<String>>>();
 			t2.add(textData);
-			return t2;
+			t3.add(t2);
+			return t3;
 		}
 	}
 	
 	
 	// Method designed to take the data read in from a file and split it into meaningful segments
-	public static List<ArrayList<String>> ParseFile(List<String> file_data) {
-		List<ArrayList<String>> parsed_data = new ArrayList<ArrayList<String>>();
+	public static List<ArrayList<ArrayList<String>>> ParseFile(List<String> file_data) {
+		List<ArrayList<ArrayList<String>>> full_list = new ArrayList<ArrayList<ArrayList<String>>>();
+		ArrayList<ArrayList<String>> parsed_data = new ArrayList<ArrayList<String>>();
 		for (int i=0; i < file_data.size(); ++i) { // loop through all lines in the input
 			//System.out.println(i+ " " + file_data.toArray()[i]);
 			int temp = 0;
@@ -128,8 +114,49 @@ public class Main {
 			ArrayList<String> t_list2 = new ArrayList<String>();
 			t_list.add(f[i].substring(temp));
 			String[] l = t_list.toArray(new String[0]);
+			boolean noadd = false;
 			if (iskeyword(l[0])) {
-				t_list2 = t_list;
+				if (l[0].equals("-file")) {
+					full_list.add(parsed_data);
+					parsed_data = new ArrayList<ArrayList<String>>();
+					t_list2 = t_list;
+				}
+				//If the source tag is specified, parse that input
+				if (l[0].equals("-source")) {
+					noadd = true;
+					if (l.length == 3 || l.length == 5) {
+						if (l[1].equals("Lea")) {
+							ref_type = "Lea";
+						} else if (l[1].equals("School")) {
+							ref_type = "School";
+						} else {
+							System.err.println("Failed to parse -source input. Failed on " + l[1]);
+						}
+						refid = l[2].split(",");
+//						System.out.println("refid:");
+//						for (String s : refid) {
+//							System.out.println(s);
+//						}
+						if (l.length == 5) {
+							if (l[3].equals("Grade")) {
+								String[] t = l[4].split(",");
+								grade_nums = new int[t.length];
+								for (int s=0; s < t.length; ++s) {
+									grade_nums[s] = Integer.parseInt(t[s]);
+								}
+							} else {
+								System.err.println("Failed to parse -source input. Failed on " + l[3]);
+							}
+						}
+					} else {
+						System.out.println("\nSource: ");
+						for (String s : l) {
+							System.out.print(s + " " );
+						}
+						System.out.println("\n");
+					}
+				}
+				
 			} else if (l.length > 2) {
 				String t_string = l[1];
 				for (int j=2; j < l.length; ++j) {
@@ -140,9 +167,12 @@ public class Main {
 			} else {
 				t_list2 = t_list;
 			}
-			parsed_data.add(t_list2);
+			if (!noadd) {
+				parsed_data.add(t_list2);
+			}
 		}
-		return parsed_data;
+		full_list.add(parsed_data);
+		return full_list;
 	}    
 	
 	//used to aid input file parsing. Checks if a word is in list of keywords
@@ -160,10 +190,15 @@ public class Main {
 	}
     
     public static void main(String[] args) {
+    	Map<String,Data> file_name_to_data = new TreeMap<String,Data>();
     	System.out.println("Start Program");
     	System.out.println("Start auth");
-//		Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
-	    System.out.println("end auth");
+		Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
+		
+		// TODO remove this line before going to production
+		Util.disableSslVerification();
+		
+	    System.out.println("End auth");
     	String c_file = "";
 		
 		if (args.length > 0) {
@@ -174,31 +209,51 @@ public class Main {
 			}
 		}
 		
-		System.out.println(c_file);
-		List<ArrayList<String>> dat = new ArrayList<ArrayList<String>>();
+		//System.out.println(c_file);
+		List<ArrayList<ArrayList<String>>> dat = new ArrayList<ArrayList<ArrayList<String>>>();
 
 		dat = ReadFile(c_file,true);
 		
 		
-		System.out.println("Start");
-		String xpress_type = "";
+		System.out.println("Start function calling");
 		System.out.println(dat);
-		for (ArrayList<String> i : dat) {
-			String[] l = i.toArray(new String[0]);
-			if (iskeyword(l[0])) {
-				if (l[0].equals("-file")) {
-					System.out.println("This is a file name: "+l[1]+"");	
-					xpress_type = l[2];					
+		for (ArrayList<ArrayList<String>> category : dat) {
+			if (category.size()>0) {
+				String xpress_type = "";
+				System.out.println(category);
+				if (category.get(0).get(0).equals("-file")) {
+					System.out.println("This is a file name: "+category.get(0).get(1)+"");	
+					xpress_type = category.get(0).get(2);					
 				} else {
-					System.out.println("Still need to do something with " + l[0]);
+					System.out.println("Still need to do something with " + category.get(0).get(0));
 				}
-			} else {
-//				for(Endpoint e : auth.getEndpoints()) {
-//					XPress xPress = new XPress(auth.getToken(), e.getHref());
-//					FunctCaller(i.toArray(new String[0])[1], xPress,xpress_type);
-//					XLeas_GetXLeas(xPress);
-//			    } 
-				System.out.println("Full call looks like: X" + xpress_type + "Type var : xPress.getX" + xpress_type + "s().getData() (" + xpress_type + ")var.get"+l[1]+"()");
+				List<TreeMap<String, String>> list = new ArrayList<TreeMap<String,String>>();
+				for(Endpoint e : auth.getEndpoints()) {
+						XPress xPress = new XPress(auth.getToken(), e.getHref());
+						list.addAll(DataRead(xpress_type, xPress,category.subList(1,category.size()))); // should be a list += need to look up exact syntax
+						System.out.println(list);
+						for (Map<String,String> i : list) {
+							System.out.println(i);
+						}
+						//XLeas_GetXLeas(xPress);
+				}
+				Data d = new Data(list);
+				file_name_to_data.put(category.get(0).get(1),d);
+				
+//				for (ArrayList<String> i : category) {
+//					if (iskeyword(i.get(0)) && !i.get(0).equals("-file")) {
+//						System.out.println("Keyword detected: " + i.get(0));
+//					} else {
+//	//					for(Endpoint e : auth.getEndpoints()) {
+//	//						XPress xPress = new XPress(auth.getToken(), e.getHref());
+//	//						FunctCaller(i.get(1), xPress,xpress_type);
+//	//	TODO					DataRead(i.get(1),xpress_type, xPress);
+//	//						XLeas_GetXLeas(xPress);
+//	//				    } 
+//						//System.out.println("Full call looks like: X" + xpress_type + "Type var : xPress.getX" + xpress_type + "s().getData() (" + xpress_type + ")var.get"+i.get(1)+"()");
+//		
+//					}
+//				}
 			}
 		}
 		
@@ -213,7 +268,12 @@ public class Main {
 //			//XLeas_GetXLeas(xPress);
 //	    } 
 		
-		System.out.println("Finish");		
+		System.out.println("End function calling");		
+		
+		
+		for (Map.Entry<String,Data> entry : file_name_to_data.entrySet()) {
+			System.out.println("\n" + entry.getKey());
+		}
 		
 				
 		
@@ -221,9 +281,9 @@ public class Main {
 		
 		
 		
-		System.out.println("End of the Program");
+		System.out.println("End Program");
     }
-
+    
 
 	public static void XLeas_GetXLeas(XPress xPress)
 	{
@@ -272,10 +332,84 @@ public class Main {
 		}
 	}
 	
+	public static List<TreeMap<String,String>> DataRead(String data_type, XPress xPress, List<ArrayList<String>> commands) {
+		List<TreeMap<String,String>> list = new ArrayList<TreeMap<String,String>>();
+		if (ref_type.equals("Lea")) {
+			for (String rid : refid) {
+				switch (data_type) {
+					case "Lea": {
+						TreeMap<String,String> map = new TreeMap<String,String>();
+// TODO remove when API server is back online						XLeaType lea = xPress.getXLea(rid).getData();
+						for (ArrayList<String> com : commands) {
+							Method m;
+//							try {
+//								m = XLeaType.class.getDeclaredMethod(com.get(1));
+//								System.out.println(m.invoke(lea));
+//								map.put(com.get(0),m.invoke(lea)); // this line should associate the data pulled from the RICONE server with the user's function name
+								map.put(com.get(0),com.get(1));
+//								System.out.println("executing ." + com.get(1) + "() on Lea with refid: " + rid); // TODO make this input to data map
+//							} catch (NoSuchMethodException e) {
+//								System.err.println("Couldnt find ." + com + "() as a callable method. Check the spelling?");
+//								e.printStackTrace();
+//							} catch (SecurityException e) {
+//								e.printStackTrace();
+//							} catch (IllegalAccessException e) {
+//								e.printStackTrace();
+//							} catch (IllegalArgumentException e) {
+//								e.printStackTrace();
+//							} catch (InvocationTargetException e) {
+//								e.printStackTrace();
+//							}
+						}
+						list.add(map);
+						break;
+					}
+					case "School": {
+						TreeMap<String,String> map = new TreeMap<String,String>();
+//						// TODO remove when API server is back online						XLeaType lea = xPress.getXLea(rid).getData();
+						for (ArrayList<String> com : commands) {
+							Method m;
+//							try {
+//								m = XLeaType.class.getDeclaredMethod(com.get(1));
+//								System.out.println(m.invoke(lea));
+//								map.put(com.get(0),m.invoke(lea)); // this line should associate the data pulled from the RICONE server with the user's function name
+								map.put(com.get(0),com.get(1));
+//								System.out.println("executing ." + com.get(1) + "() on Lea with refid: " + rid); // TODO make this input to data map
+//							} catch (NoSuchMethodException e) {
+//								System.err.println("Couldnt find ." + com + "() as a callable method. Check the spelling?");
+//								e.printStackTrace();
+//							} catch (SecurityException e) {
+//								e.printStackTrace();
+//							} catch (IllegalAccessException e) {
+//								e.printStackTrace();
+//							} catch (IllegalArgumentException e) {
+//								e.printStackTrace();
+//							} catch (InvocationTargetException e) {
+//								e.printStackTrace();
+//							}
+						}
+						list.add(map);
+						break;
+					}
+					default: {
+						System.err.println("hitting default case. thats a problem...");
+						break;
+					}
+				}
+			}
+		}
+		if (ref_type.equals("School")) {
+			
+		}
+		return list;
+	}
+	
+	
 	//Method designed to take the strings of function names from the previous methods and use them to call the RICONE API for the needed data
-	public static <T> void FunctCaller(String funct_name, XPress xPress, String type) {
+	public static void FunctCaller(String funct_name, XPress xPress, String type) {
+		Map<String,String> ma = new TreeMap<>();
 		System.out.println(funct_name + " of type " + type);
-		type = "nothing"; // Delete this line once we can successfully connect to the API server
+		type = "nothing"; //TODO Delete this line once we can successfully connect to the API server
 		switch (type) {
 			case "Lea": {
 				if(xPress.getXLeas().getData() != null)
@@ -284,23 +418,18 @@ public class Main {
 					{	
 						Method m;
 						try {
-							m = XLeaType.class.getDeclaredMethod("get"+funct_name);
+							m = XLeaType.class.getDeclaredMethod(funct_name);
 							System.out.println(m.invoke(var));
 						} catch (NoSuchMethodException e) {
-							// TODO Auto-generated catch block
-							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
+							System.err.println("Couldnt find ." + funct_name + "() as a callable method. Check the spelling?");
 							e.printStackTrace();
 						} catch (SecurityException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -316,20 +445,15 @@ public class Main {
 							m = XSchoolType.class.getDeclaredMethod("get"+funct_name);
 							System.out.println(m.invoke(var));
 						} catch (NoSuchMethodException e) {
-							// TODO Auto-generated catch block
 							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
 							e.printStackTrace();
 						} catch (SecurityException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -345,20 +469,15 @@ public class Main {
 							m = XCalendarType.class.getDeclaredMethod("get"+funct_name);
 							System.out.println(m.invoke(var));
 						} catch (NoSuchMethodException e) {
-							// TODO Auto-generated catch block
 							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
 							e.printStackTrace();
 						} catch (SecurityException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -374,20 +493,15 @@ public class Main {
 							m = XCourseType.class.getDeclaredMethod("get"+funct_name);
 							System.out.println(m.invoke(var));
 						} catch (NoSuchMethodException e) {
-							// TODO Auto-generated catch block
 							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
 							e.printStackTrace();
 						} catch (SecurityException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -403,20 +517,15 @@ public class Main {
 							m = XRosterType.class.getDeclaredMethod("get"+funct_name);
 							System.out.println(m.invoke(var));
 						} catch (NoSuchMethodException e) {
-							// TODO Auto-generated catch block
 							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
 							e.printStackTrace();
 						} catch (SecurityException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -432,20 +541,15 @@ public class Main {
 							m = XStaffType.class.getDeclaredMethod("get"+funct_name);
 							System.out.println(m.invoke(var));
 						} catch (NoSuchMethodException e) {
-							// TODO Auto-generated catch block
 							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
 							e.printStackTrace();
 						} catch (SecurityException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -461,20 +565,15 @@ public class Main {
 							m = XStudentType.class.getDeclaredMethod("get"+funct_name);
 							System.out.println(m.invoke(var));
 						} catch (NoSuchMethodException e) {
-							// TODO Auto-generated catch block
 							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
 							e.printStackTrace();
 						} catch (SecurityException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -490,20 +589,15 @@ public class Main {
 							m = XContactType.class.getDeclaredMethod("get"+funct_name);
 							System.out.println(m.invoke(var));
 						} catch (NoSuchMethodException e) {
-							// TODO Auto-generated catch block
 							System.err.println("Couldnt find .get" + funct_name + "() as a callable method. Check the spelling?");
 							e.printStackTrace();
 						} catch (SecurityException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
