@@ -6,7 +6,8 @@
  */
 
 
-import java.io.File; 
+import java.io.File;
+import java.net.URISyntaxException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,9 +26,13 @@ public class LoadConfiguration extends Configuration {
 	LoadConfiguration(){
 		
 		GlobalUtilities.logInfo("Loading configuration settings...");
+			 
+		File file = new File(CONF_FILE);
 		
-		// Setup xml parser  
-		File file = new File(CONF_FILE);		
+		if(!file.exists()){
+			file = getWorkingDir();
+		}
+		
 	    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = null;
 		
@@ -45,7 +50,19 @@ public class LoadConfiguration extends Configuration {
 		}	 			
 	}
 	
-    private JSONObject requiredDataToJSON(Document document) throws DOMException, JSONException {
+    private File getWorkingDir() {
+    	
+    	File loca = null;
+		try {
+			loca = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());	
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+    	
+		return new File(loca.getParentFile()+File.separator+CONF_FILE);
+	}
+
+	private JSONObject requiredDataToJSON(Document document) throws DOMException, JSONException {
     	    NodeList nodes = document.getElementsByTagName("required_data")
     	    		   .item(0).getChildNodes();
     	    
@@ -57,7 +74,7 @@ public class LoadConfiguration extends Configuration {
     	    		
     	    		JSONObject tempObj = new JSONObject();
     	    		tempObj.put("text_file_name", nodes.item(i).getNodeName());
-    	    		tempObj.put("colum_name", nodes.item(i).getAttributes().item(0).getTextContent());
+    	    		tempObj.put("column_name", nodes.item(i).getAttributes().item(0).getTextContent());
     	    		tempObj.put("required_data", nodes.item(i).getTextContent());    	    		
     	    		obj.put(""+j, tempObj);
     	    		j++;
@@ -81,6 +98,7 @@ public class LoadConfiguration extends Configuration {
     	 sftpPassword = getTextContent("sftp_password");
     	 outputFolderTitle = getTextContent("output_folder_title");
     	 zipEnabled = (getTextContent("zip_enabled").contains("true"));
+    	 enableLogging = (getTextContent("log_enabled").contains("true"));
     	 outputSchema = getTextContent("output_schema").toLowerCase();
    	     outputExport = getTextContent("output_export").toLowerCase();  	    
    	     outputPath = getTextContent("output_path"); 	
@@ -108,10 +126,10 @@ public class LoadConfiguration extends Configuration {
           
           if(outputPath.isEmpty()){
             	
-            	  GlobalUtilities.logWarning("No path specified! Using "+ System.getProperty("user.dir")
+            	  GlobalUtilities.logWarning("No output path specified! Using "+ getWorkingDir().getParent()
             	  + " as default.");
 
-                  outputPath = System.getProperty("user.dir");			
+                  outputPath = getWorkingDir().getParent();			
     	   } 
           
           if(outputExport.matches("sftp")){
@@ -158,7 +176,6 @@ public class LoadConfiguration extends Configuration {
         	  System.exit(1);
           }
           
-
      	 GlobalUtilities.logInfo("Settings validated...");  
      	 
 		return true;

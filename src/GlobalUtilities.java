@@ -6,7 +6,9 @@
  */
 
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -16,10 +18,16 @@ public class GlobalUtilities {
 	private static boolean shouldLog;
 	final static String LOCAL="local";
 	final static String SFTP="sftp";
-   
+	final static String CSV="csv";
+ 
+	
 	
 	public static void enableLogging(boolean val) {
 		 shouldLog = val;
+		 
+		 if(!shouldLog)
+			 return;
+		 
 		 FileHandler fh; 
 		 
 		 try {  
@@ -50,4 +58,28 @@ public class GlobalUtilities {
 			LOGGER.severe(msg);
 	}
 
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

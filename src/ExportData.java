@@ -9,6 +9,8 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
@@ -25,7 +27,10 @@ public class ExportData {
 		File file = setupOutputPath(config);
 	 
 		//TODO: Write file to path
-		writeDataToFile(file);
+		//writeDataToFile(file);
+		if(config.getOutputSchema().matches(GlobalUtilities.CSV)){
+			generateCsvFile(config,file);
+		}		
 	
 		if(config.getOutputExport().matches(GlobalUtilities.SFTP)){
 			pushFileToSftpServer(file.getAbsolutePath(), config);
@@ -38,11 +43,44 @@ public class ExportData {
 		
 	}
 
+	private void generateCsvFile(Configuration config, File file) {
+		GlobalUtilities.logInfo("Generating file...");
+		try {
+			
+			for(int i=0; i < config.getTextTitle().size(); i++){
+				
+				FileWriter writer = new FileWriter(file+File.separator+config.getTextTitle()
+						.get(i)+"."+config.getOutputSchema());
+				
+				String columnNameStringList = config.getColumnNames().get(i);
+				
+				for(String columnName: columnNameStringList.split(",")){
+					writer.append(columnName);
+				    writer.append(',');		   
+				}
+				writer.append('\n');
+				
+				writer.flush();
+			    writer.close();
+
+			}
+			
+			
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			GlobalUtilities.logError(""+e.getMessage());
+		}
+		
+		GlobalUtilities.logInfo("Files generated successfully..");
+		// TODO Auto-generated method stub
+		
+	}
+
 	private void zipFileOnly(String outputPath) {
 		try {
-			GlobalUtilities.logInfo("Zipping in progress..");
 			FolderZiper.zipFolder(outputPath, outputPath+".zip");
-			GlobalUtilities.logInfo("Zipping completed..");
+			
 		} catch (Exception e) {
 			GlobalUtilities.logInfo("Failed to zip file..");
 			e.printStackTrace();
@@ -62,36 +100,18 @@ public class ExportData {
 		
 	}
 
-	private void writeDataToFile(File file) {
-		// test save file
-				PrintWriter writer;
-				try {
-					writer = new PrintWriter(file.getAbsolutePath()+"/"+"the-file-nameLoop.txt", "UTF-8");
-					writer.println("The first line");
-				    writer.println("The second line");
-				    writer.close();
-				    
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-	}
-
 	private File setupOutputPath(Configuration config) {
 
 				
 		String outputPath = "";
 		
 		if (config.getOutputExport().matches(GlobalUtilities.LOCAL)){
-			outputPath = (config.getOutputPath().isEmpty()) ? "": config.getOutputPath()+"\\";
+			outputPath = (config.getOutputPath().isEmpty()) ? "": config.getOutputPath()+File.separator;
 		}
 		
 		
 		String outputFolderTitle = (config.getOutputFolderTitle().isEmpty()) 
-				? "SOME TITLE HERE":config.getOutputFolderTitle();
+				? "RicOne Data":config.getOutputFolderTitle();
 		
 		File file = new File(outputPath+outputFolderTitle);
 		
@@ -131,35 +151,35 @@ public class ExportData {
 	}
 	
 	public static void sftpUploader(String path, String user, String password, String port, String srcDir) {
-		  try {
-		    JSch jsch = new JSch();
-			Session session = jsch.getSession(user,path, Integer.parseInt(port));
-			session.setPassword(password);
-			
-			java.util.Properties config = new java.util.Properties();
-			config.put("StrictHostKeyChecking", "no");
-			session.setConfig(config);
-			session.connect();
-			
-			
-			Channel channel = session.openChannel("sftp");
-			channel.connect();
-			ChannelSftp channelSftp = (ChannelSftp) channel;
-			//channelSftp.cd("");
-	
-			File f1 = new File(srcDir+".zip");
-			channelSftp.put(new FileInputStream(f1), f1.getName());
-			
-			channelSftp.exit();
-			session.disconnect();
+	  try {
+	    JSch jsch = new JSch();
+		Session session = jsch.getSession(user,path, Integer.parseInt(port));
+		session.setPassword(password);
 		
-		  } catch (Exception ex) {
-			  GlobalUtilities.logError("Failed to upload file to sftp server. Please check sftp host, username, password and port number.");
-			  GlobalUtilities.logError(ex.getMessage());
-		     ex.printStackTrace();
-		  }
-		  
-		}
+		java.util.Properties config = new java.util.Properties();
+		config.put("StrictHostKeyChecking", "no");
+		session.setConfig(config);
+		session.connect();
+		
+		
+		Channel channel = session.openChannel("sftp");
+		channel.connect();
+		ChannelSftp channelSftp = (ChannelSftp) channel;
+		//channelSftp.cd("");
+
+		File f1 = new File(srcDir+".zip");
+		channelSftp.put(new FileInputStream(f1), f1.getName());
+		
+		channelSftp.exit();
+		session.disconnect();
+	
+	  } catch (Exception ex) {
+		  GlobalUtilities.logError("Failed to upload file to sftp server. Please check sftp host, username, password and port number.");
+		  GlobalUtilities.logError(ex.getMessage());
+	     ex.printStackTrace();
+	  }
+	  
+	}
 	
 
 }

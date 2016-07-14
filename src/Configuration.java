@@ -30,6 +30,7 @@ public abstract class Configuration {
 	 protected String clientId;
 	 protected String authUrl;
 	 public JSONObject requiredJsonData;
+	protected boolean enableLogging;
 	
   
 	/**
@@ -208,6 +209,11 @@ public abstract class Configuration {
     	 
   		
 		return requiredData;
+	}
+
+	public boolean isLoggingEnabled() {
+		
+		return enableLogging;
 	}
       
      

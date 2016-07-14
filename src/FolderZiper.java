@@ -54,7 +54,6 @@ static public boolean zipFolder(String srcFolder, String destZipFile) {
 		    }
 	    
 	  
-	  GlobalUtilities.logInfo("Zipping completed..");
 	  return true;
 
     
