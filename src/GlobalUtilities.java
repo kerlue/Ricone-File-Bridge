@@ -16,13 +16,14 @@ import java.util.logging.SimpleFormatter;
 public class GlobalUtilities {
     private static Logger LOGGER = Logger.getLogger("File Bridge");
 	private static boolean shouldLog;
+	private static File workingDir;
 	final static String LOCAL="local";
 	final static String SFTP="sftp";
 	final static String CSV="csv";
  
 	
 	
-	public static void enableLogging(boolean val) {
+	public static void enableLogging(boolean val, String path) {
 		 shouldLog = val;
 		 
 		 if(!shouldLog)
@@ -32,7 +33,7 @@ public class GlobalUtilities {
 		 
 		 try {  
 		        // This block configure the logger with handler and formatter  
-		        fh = new FileHandler("log.log");  
+		        fh = new FileHandler(path+File.separator+"Log.log");  
 		        LOGGER.addHandler(fh);
 		        SimpleFormatter formatter = new SimpleFormatter();  
 		        fh.setFormatter(formatter);  
@@ -56,6 +57,15 @@ public class GlobalUtilities {
 	public static void logError(String msg) {
 		if(shouldLog)
 			LOGGER.severe(msg);
+	}
+
+	public static void setWorkingDir(File workDir) {
+		workingDir = workDir;
+	}
+
+	public static File getWorkingDir() {
+		// TODO Auto-generated method stub
+		return workingDir;
 	}
 
 

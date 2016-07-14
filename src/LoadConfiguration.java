@@ -26,11 +26,14 @@ public class LoadConfiguration extends Configuration {
 	LoadConfiguration(){
 		
 		GlobalUtilities.logInfo("Loading configuration settings...");
-			 
+		GlobalUtilities.setWorkingDir(getWorkingDir());	 
+		GlobalUtilities.enableLogging(true, GlobalUtilities.getWorkingDir().getAbsolutePath());
+		
+		System.out.println(getWorkingDir()+"--"+GlobalUtilities.getWorkingDir());
 		File file = new File(CONF_FILE);
 		
 		if(!file.exists()){
-			file = getWorkingDir();
+			file = new File(GlobalUtilities.getWorkingDir()+File.separator+CONF_FILE);
 		}
 		
 	    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -50,18 +53,7 @@ public class LoadConfiguration extends Configuration {
 		}	 			
 	}
 	
-    private File getWorkingDir() {
-    	
-    	File loca = null;
-		try {
-			loca = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());	
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-    	
-		return new File(loca.getParentFile()+File.separator+CONF_FILE);
-	}
-
+   
 	private JSONObject requiredDataToJSON(Document document) throws DOMException, JSONException {
     	    NodeList nodes = document.getElementsByTagName("required_data")
     	    		   .item(0).getChildNodes();
@@ -126,10 +118,10 @@ public class LoadConfiguration extends Configuration {
           
           if(outputPath.isEmpty()){
             	
-            	  GlobalUtilities.logWarning("No output path specified! Using "+ getWorkingDir().getParent()
+            	  GlobalUtilities.logWarning("No output path specified! Using "+ GlobalUtilities.getWorkingDir()
             	  + " as default.");
 
-                  outputPath = getWorkingDir().getParent();			
+                  outputPath = GlobalUtilities.getWorkingDir().getAbsolutePath();			
     	   } 
           
           if(outputExport.matches("sftp")){
@@ -194,6 +186,19 @@ public class LoadConfiguration extends Configuration {
 		}
 		 
 	}
+	
+	 private File getWorkingDir() {
+	    	
+	    	File loca = null;
+			try {
+				loca = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());	
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+	    	
+			return new File(loca.getParentFile()+File.separator);
+		}
+
 
 	
 }
