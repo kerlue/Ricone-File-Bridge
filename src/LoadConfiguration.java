@@ -29,7 +29,7 @@ public class LoadConfiguration extends Configuration {
 		GlobalUtilities.setWorkingDir(getWorkingDir());	 
 		GlobalUtilities.enableLogging(true, GlobalUtilities.getWorkingDir().getAbsolutePath());
 		
-		System.out.println(getWorkingDir()+"--"+GlobalUtilities.getWorkingDir());
+		
 		File file = new File(CONF_FILE);
 		
 		if(!file.exists()){
