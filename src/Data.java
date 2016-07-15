@@ -11,11 +11,17 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class Data {
-	private List<TreeMap<String, String>> l; // each map represents 1 object (Lea, School, Student, Staff, etc.) listy represents all objects present
+	private List<TreeMap<String, String>> l; // each map represents 1 object (Lea, School, Student, Staff, etc.) list represents all objects present
 	private String file_name;
 	
-	Data(List<TreeMap<String, String>> list, String f_name) {
-		this.l = list;
+	Data(List<ArrayList<DataType>> list, String f_name) {
+		for (ArrayList<DataType> i : list) {
+			TreeMap<String,String> m= new TreeMap<String,String>();
+			for (DataType d_t : i) {
+				m.put(d_t.getOutsideName(),d_t.getResult());
+			}
+			this.l.add(m);
+		}
 		this.file_name = f_name;
 	}
 	
