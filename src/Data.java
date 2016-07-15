@@ -1,8 +1,8 @@
 /*////////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date Created: 7/12/2016
- * Version: 0.3.0
- * Updated: 7/13/2016
+ * Version: 1.0.0
+ * Updated: 7/15/2016
 */////////////////////////////////////////////////
 
 import java.util.ArrayList;
@@ -12,9 +12,11 @@ import java.util.TreeMap;
 
 public class Data {
 	private List<TreeMap<String, String>> l; // each map represents 1 object (Lea, School, Student, Staff, etc.) listy represents all objects present
+	private String file_name;
 	
-	Data(List<TreeMap<String, String>> list) {
+	Data(List<TreeMap<String, String>> list, String f_name) {
 		this.l = list;
+		this.file_name = f_name;
 	}
 	
 	List<String> getAllValues(String val) { // returns a list of all values associated with a certain category
@@ -27,5 +29,13 @@ public class Data {
 
 	List<TreeMap<String,String>> getData() {
 		return l;
+	}
+	
+	String getFileName() {
+		return file_name;
+	}
+	
+	void Print() {
+		System.out.println("File Name: " + file_name + "\nData: " + l);
 	}
 }
