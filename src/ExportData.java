@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
+import org.json.JSONObject;
+
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -22,16 +24,26 @@ import com.jcraft.jsch.Session;
 
 public class ExportData {
 
-	public ExportData(Configuration config, String string) {
+	public ExportData(Configuration config, GetDataFromApiTest data) {
 		
 		File file = setupOutputPath(config);
 	 
-		//TODO: Write file to path
-		//writeDataToFile(file);
-		if(config.getOutputSchema().matches(GlobalUtilities.CSV)){
-			generateCsvFile(config,file);
-		}		
+		switch(config.getOutputSchema()){
+		     case GlobalUtilities.CSV: 
+		    	 new GenerateCsvFile(config,file,data);
+			 break;
+			 
+		     case GlobalUtilities.XML: 
+		    	 //TODO: create xml output
+			 break;
+			 
+		     case GlobalUtilities.JSON: 
+		    	 //TODO: create JSON output
+			 break;
+			 
+		 }
 	
+		
 		if(config.getOutputExport().matches(GlobalUtilities.SFTP)){
 			pushFileToSftpServer(file.getAbsolutePath(), config);
 		}
@@ -43,44 +55,9 @@ public class ExportData {
 		
 	}
 
-	private void generateCsvFile(Configuration config, File file) {
-		GlobalUtilities.logInfo("Generating file...");
-		try {
-			
-			for(int i=0; i < config.getTextTitle().size(); i++){
-				
-				FileWriter writer = new FileWriter(file+File.separator+config.getTextTitle()
-						.get(i)+"."+config.getOutputSchema());
-				
-				String columnNameStringList = config.getColumnNames().get(i);
-				
-				for(String columnName: columnNameStringList.split(",")){
-					writer.append(columnName);
-				    writer.append(',');		   
-				}
-				writer.append('\n');
-				
-				writer.flush();
-			    writer.close();
-
-			}
-			
-			
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-			GlobalUtilities.logError(""+e.getMessage());
-		}
-		
-		GlobalUtilities.logInfo("Files generated successfully..");
-		// TODO Auto-generated method stub
-		
-	}
-
 	private void zipFileOnly(String outputPath) {
 		try {
 			FolderZiper.zipFolder(outputPath, outputPath+".zip");
-			
 		} catch (Exception e) {
 			GlobalUtilities.logInfo("Failed to zip file..");
 			e.printStackTrace();

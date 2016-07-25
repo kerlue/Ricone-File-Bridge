@@ -33,12 +33,10 @@ public class DataReader {
     	ref_type = r_type;
     	grade_nums = null;
     }
-    
-    
-
-    
+   
     public ArrayList<DataType> GetDataTypes (String col_names, String req_data) {
     	ArrayList<DataType> full_list = new ArrayList<DataType>();
+    	
     	String[] t_list1 = col_names.split(",");    	
     	String[] t_list2 = req_data.split(",");
     	    	
@@ -49,19 +47,17 @@ public class DataReader {
     	
     	for (int i=0; i < t_list1.length; ++i) {
     		String s = t_list2[i].trim();
+    		
     		if (s.equals("null")) {
     			System.err.println("cannot recognize " + t_list1[i].trim());
         		//DataType d = new DataType("",t_list1[i].trim(),"");
         		//full_list.add(d);
     		} else {
     			String[] t = s.split(" ");
-        		DataType d = new DataType(t[0].substring(1,t[0].length()),t_list1[i].trim(),t[1]);
+    			DataType d = new DataType(t[0].substring(1,t[0].length()),t_list1[i].trim(),t[1]);
         		full_list.add(d);
     		}
-    		
-
     	}
-    	
     	
     	return full_list;
     }
@@ -79,9 +75,13 @@ public class DataReader {
 	
     public Data ReadIn(Authenticator auth, List<DataType> data_type_list, String file_name) { // xPressType should be "Lea","School","Student","Staff",etc.
 		List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
+		
+		
+		
 		for(Endpoint e : auth.getEndpoints()) {
 			XPress xPress = new XPress(auth.getToken(), e.getHref());
 			list.addAll(DataRead(xPress,data_type_list));
+			System.out.println("--->"+list);
 			//System.out.println(list);
 			//XLeas_GetXLeas(xPress);
 		}
@@ -94,10 +94,12 @@ public class DataReader {
     	List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
     	String data_type;
     	data_type = data_highlevel_list.get(0).getDataCategory();
+    	
     	ArrayList<ArrayList<String>> commands = new ArrayList<ArrayList<String>>();
     	for (DataType d : data_highlevel_list) {
     		commands.add(d.getCommandArray());
     	}
+    	
     	if (ref_type.equals("Lea")) {
     		for (String rid : refid) {
     			switch (data_type) {
@@ -250,9 +252,12 @@ public class DataReader {
     									}
     								}
     							}
-    						} else {
+    						} 
+    						else {
     							grade_match = true;
     						}
+    						
+    						
     						if (grade_match) {
     							for (ArrayList<String> com : commands) {
     								Method m;

@@ -33,9 +33,11 @@ public class LoadConfiguration extends Configuration {
 		File file = new File(CONF_FILE);
 		
 		if(!file.exists()){
+			//When running jar the config file might be located in the working dir. 
 			file = new File(GlobalUtilities.getWorkingDir()+File.separator+CONF_FILE);
 		}
 		
+		// Parse xml settings 
 	    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = null;
 		
@@ -60,7 +62,6 @@ public class LoadConfiguration extends Configuration {
     	    
     	    JSONObject obj = new JSONObject();
     	    
-    	    
     	    for(int i=0, j =0; i < nodes.getLength(); i++){
     	    	if(nodes.item(i).getNodeType() == Node.ELEMENT_NODE){
     	    		
@@ -71,20 +72,19 @@ public class LoadConfiguration extends Configuration {
     	    		obj.put(""+j, tempObj);
     	    		j++;
     	    	}
-    	    	
     	    }
-    	     
     	    return obj;
-	 
 	}
 
 	private boolean validateSettings() {
     	
     	GlobalUtilities.logInfo("Configuration settings loaded..\nValidating settings...");
     	
-    	// check that the configuration output format is valid. 
+        /**
+         *  Check that the configuration output format is valid 
+         *  and assign values from config file to variable
+        */
     	
-    	// assign values from config file to variable
     	 sftpPort = getTextContent("sftp_port");
     	 sftpUsername = getTextContent("sftp_username");
     	 sftpPassword = getTextContent("sftp_password");
@@ -99,9 +99,8 @@ public class LoadConfiguration extends Configuration {
  	     providerId = getTextContent("provider_id");
  	     clientId = getTextContent("client_id");
  	     authUrl = getTextContent("auth_url");
+ 	     filter = getFilterContent();
     	 
- 	     // check that config file settings are valid.
- 	     
           if(!(outputSchema.matches("csv")|| 
         	   outputSchema.matches("xml")||
         	   outputSchema.matches("json"))){
@@ -125,6 +124,7 @@ public class LoadConfiguration extends Configuration {
     	   } 
           
           if(outputExport.matches("sftp")){
+        	  
         	  boolean error = false;
         	  
         	  if(sftpPort.isEmpty()){
@@ -144,7 +144,7 @@ public class LoadConfiguration extends Configuration {
         		  GlobalUtilities.logError("Please check configuration settings.. ");
         		  return false;
         	  }
-        	  }
+          }
           
           if(navigationPageSize.isEmpty()){
         	  navigationPageSize = "1";
@@ -183,6 +183,19 @@ public class LoadConfiguration extends Configuration {
 			GlobalUtilities.logError("Incorrect configuration tag...");
 			System.exit(1);			
 			return "null";
+		}
+		 
+	}
+	
+private String getFilterContent() {
+		
+		try{
+			return (document.getElementsByTagName("filter").item(0)
+			.getTextContent().trim());
+			
+		}catch(Exception e){
+					
+			return null;
 		}
 		 
 	}

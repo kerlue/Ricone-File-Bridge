@@ -30,13 +30,14 @@ public abstract class Configuration {
 	 protected String clientId;
 	 protected String authUrl;
 	 public JSONObject requiredJsonData;
-	protected boolean enableLogging;
-	
-  
+	 protected boolean enableLogging;
+	 protected String filter;
+
 	/**
 	 * @param args void.
 	 * @param Returns export type. eg CSV, XML or JSON.
 	 */
+	 
 	public String getOutputSchema() {
 		return this.outputSchema;
 	}
@@ -143,6 +144,10 @@ public abstract class Configuration {
  		return this.clientSecret;
  	}
      
+     
+     public String getFilterList() {
+  		return this.filter;
+  	}
      
      /**
     	 * @param args void.

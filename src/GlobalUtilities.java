@@ -20,6 +20,8 @@ public class GlobalUtilities {
 	final static String LOCAL="local";
 	final static String SFTP="sftp";
 	final static String CSV="csv";
+	public static final String JSON = "json";
+	public static final String XML = "xml";
  
 	
 	
