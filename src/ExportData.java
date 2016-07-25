@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 import org.json.JSONObject;
 
@@ -31,6 +32,37 @@ public class ExportData {
 		switch(config.getOutputSchema()){
 		     case GlobalUtilities.CSV: 
 		    	 new GenerateCsvFile(config,file,data);
+			 break;
+			 
+		     case GlobalUtilities.XML: 
+		    	 //TODO: create xml output
+			 break;
+			 
+		     case GlobalUtilities.JSON: 
+		    	 //TODO: create JSON output
+			 break;
+			 
+		 }
+	
+		
+		if(config.getOutputExport().matches(GlobalUtilities.SFTP)){
+			pushFileToSftpServer(file.getAbsolutePath(), config);
+		}
+		
+		else if (config.getOutputExport().matches(GlobalUtilities.LOCAL)
+				&& config.isZipEnabled() == true){
+			zipFileOnly(file.getAbsolutePath());
+		}
+		
+	}
+	
+	public ExportData(Configuration config, ArrayList<Data> data) {
+		
+		File file = setupOutputPath(config);
+	 
+		switch(config.getOutputSchema()){
+		     case GlobalUtilities.CSV: 
+		    	 new GenerateCsvFile(file,data,config);
 			 break;
 			 
 		     case GlobalUtilities.XML: 

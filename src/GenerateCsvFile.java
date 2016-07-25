@@ -1,12 +1,14 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.TreeMap;
 
 import org.json.JSONObject;
 
 public class GenerateCsvFile{
 
-	public GenerateCsvFile(Configuration config, File file, GetDataFromApiTest data) {
+public GenerateCsvFile(Configuration config, File file, GetDataFromApiTest data) {
 		
 		GlobalUtilities.logInfo("Generating file...");
 		
@@ -177,7 +179,60 @@ public class GenerateCsvFile{
 		
 	
 	}
+
+
+public GenerateCsvFile(File file, ArrayList<Data> data_list, Configuration config) {
 	
+	GlobalUtilities.logInfo("Generating file...");
+	try {
+		for (Data data : data_list) {
+			//#######  Create empty files ########//
+			FileWriter writer = new FileWriter(file+File.separator+data.getFileName()+"." + config.getOutputSchema());
+			ArrayList<String> fields = new ArrayList<String>();			
+			//#######  Create column names for each files ########//			
+			for(String columnName: data.getColumnNames()){					
+				writer.append(columnName);
+			    writer.append(',');
+			    fields.add(columnName);
+			}
+			
+			System.out.println("fields " + fields);
+			writer.append('\n');
+			
+			
+			try {
+				for (TreeMap<String,Object> m : data.getData()) {
+					for(String field: fields){
+						try {
+							//writer.append(m.get(field));
+							writer.append(String.valueOf(m.get(field)).replace("null", ""));
+							writer.append(',');
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					writer.append('\n');
+				} 					
+			} catch(Exception e){
+				e.printStackTrace();
+			}
+		        
+			writer.append('\n');				
+			writer.flush();
+			writer.close();			
+		}
+	} catch (IOException e) {
+		e.printStackTrace();
+		GlobalUtilities.logError(""+e.getMessage());
+	}
+		
+	GlobalUtilities.logInfo("Files generated successfully..");
+	// TODO Auto-generated method stub
+	
+
+}
+
+
 	private String[] splitRequiredDataToList(String requiredDataList) {
 		
 		String[] data = requiredDataList.trim()

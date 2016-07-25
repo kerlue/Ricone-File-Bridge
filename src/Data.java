@@ -1,8 +1,8 @@
 /*////////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date Created: 7/12/2016
- * Version: 1.0.0
- * Updated: 7/15/2016
+ * Version: 1.1.0
+ * Updated: 7/25/2016
 */////////////////////////////////////////////////
 
 import java.util.ArrayList;
@@ -11,34 +11,43 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class Data {
-	private List<TreeMap<String, String>> l; // each map represents 1 object (Lea, School, Student, Staff, etc.) list represents all objects present
+	private List<TreeMap<String, Object>> l; // each map represents 1 object (Lea, School, Student, Staff, etc.) list represents all objects present
 	private String file_name;
 	
 	Data(List<ArrayList<DataType>> list, String f_name) {
+		this.l = new ArrayList<TreeMap<String,Object>>();
 		for (ArrayList<DataType> i : list) {
-			TreeMap<String,String> m= new TreeMap<String,String>();
-			for (DataType d_t : i) {
-				m.put(d_t.getOutsideName(),d_t.getResult());
+			if (i.size() > 0) {
+				TreeMap<String,Object> m= new TreeMap<String,Object>();
+				for (DataType d_t : i) {
+					m.put(d_t.getOutsideName(),d_t.getResult());
+				}
+				this.l.add(m);
 			}
-			this.l.add(m);
 		}
 		this.file_name = f_name;
 	}
 	
-	List<String> getAllValues(String val) { // returns a list of all values associated with a certain category
-		List<String> ls = new ArrayList<String>();
-		for (Map<String,String> map : l) {
+	List<Object> getAllValues(String val) { // returns a list of all values associated with a certain category
+		List<Object> ls = new ArrayList<Object>();
+		for (Map<String,Object> map : l) {
 			ls.add(map.get(val));
 		}
 		return ls;
 	}
 
-	List<TreeMap<String,String>> getData() {
+	List<TreeMap<String,Object>> getData() {
 		return l;
 	}
 	
 	String getFileName() {
 		return file_name;
+	}
+	
+	ArrayList<String> getColumnNames() {
+		ArrayList<String> temp = new ArrayList<String>();
+		temp.addAll(l.get(0).keySet());
+		return temp;
 	}
 	
 	void Print() {
