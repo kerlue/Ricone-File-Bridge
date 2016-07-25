@@ -8,7 +8,7 @@
 final class Authorizer {
 	static final String authUrl= "https://auth.ricone.org/login";        
     static final String clientId= "RICOneFileBridge";
-    static final String clientSecret = "d4506da077a8454640d7007a501d8170f7";
+    static final String clientSecret = "";
     static final String providerId = "RICOneFileBridge";
     static final int navigationPageSize = 1;
     
