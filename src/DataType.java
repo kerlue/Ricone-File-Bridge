@@ -1,39 +1,58 @@
 import java.util.ArrayList;
 
+/*////////////////////////////////////////////////
+ * Created By: Shamus Cardon
+ * Date Created: 7/15/2016
+ * Version: 1.0.1
+ * Updated: 7/25/2016
+*/////////////////////////////////////////////////
+
+
 public class DataType {
-	private String outside_name; // Name of function specified by user
-	private String result; // Value pulled from the API
-	private String api_name; // Name of function for API to use
-	private String data_type; // Type of data pulled from API (i.e. Lea, School, Student, etc.)
-
-	DataType(String d_type, String o_name, String api_name) {
-		this.data_type = d_type;
-		this.outside_name = o_name;
-		this.api_name = api_name;
-		this.result = null;
+	private String data_category;  // Lea, School, Student, etc.
+	private String outside_name;   // user readable name (specified in config file)
+	private String command_name;   // API command (specified in config file)
+	private String command_result; // result pulled from API
+	
+	DataType (String d_type, String out_name, String c_name) {
+		this.data_category = d_type;
+		this.outside_name = out_name;
+		this.command_name = c_name;
+		this.command_result = "";
 	}
-
-	DataType(String d_type, String o_name, String api_name, String res) {
-		this.data_type = d_type;
-		this.outside_name = o_name;
-		this.api_name = api_name;
-		this.result = res;
+	
+	DataType (String d_type, String out_name, String c_name, String result) {
+		this.data_category = d_type;
+		this.outside_name = out_name;
+		this.command_name = c_name;
+		this.command_result = result;
 	}
-
+	
+	
 	public String getDataCategory() {
-		return data_type;
+		return data_category;
 	}
-
-	public ArrayList<String> getCommandArray() {
-		return api_name;
-	}
-
+	
 	public String getOutsideName() {
 		return outside_name;
 	}
-
-	public String getResult() {
-		return result;
+	
+	public String getCommandName() {
+		return command_name;
 	}
-
+	
+//	public void setResult(String result) {
+//		this.command_result = result;
+//	}
+	
+	public String getResult() {
+		return this.command_result;
+	}
+	
+	public ArrayList<String> getCommandArray() {
+		ArrayList<String> temp = new ArrayList<String>();
+		temp.add(outside_name);
+		temp.add(command_name);
+		return temp;
+	}
 }
