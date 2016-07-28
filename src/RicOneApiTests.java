@@ -64,7 +64,10 @@ public class RicOneApiTests
 	public static void main(String[] args)
 	{   	
         Util.disableSslVerification();
-		Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
+		System.out.println("started");
+        Authenticator auth = new Authenticator(authUrl, clientId, clientSecret);
+		
+		
 		
 		System.out.println("Token: ----> "+ auth.getToken());
 		System.out.println("Endpoints: ----> "+ auth.getEndpoints());
@@ -73,16 +76,21 @@ public class RicOneApiTests
 		
 		for (Endpoint e : auth.getEndpoints())
 		{
-			XPress xPress = new XPress(auth.getToken(), e.getHref());
+			System.out.println("here");
+			System.out.println(e.getHref());
+			XPress xPress = new XPress(auth.getToken(), "https://10.6.11.20/api/requests/");
+			//XPress xPress = new XPress(auth.getToken(), e.getHref());
 			//System.out.println("xPress ref: ----> "+ xPress);
+			XLeas_GetXLeas(xPress);
 			//XRosters_GetXRostersByXSchool(xPress);
 			//XCourses_GetXCourses(xPress);
-			XRosters_GetXRosters(xPress);
+			//XRosters_GetXRosters(xPress);
 			//XCalendars_GetXCalendars(xPress);
 			//XCourses_GetXCourses(xPress);
 			//XStaffs_GetXStaffs(xPress);
 			//XStudents_GetXStudent(xPress);
 		}
+		System.out.println("finished");
  
 	}
 	
@@ -96,8 +104,10 @@ public class RicOneApiTests
 	
 	public static void XLeas_GetXLeas(XPress xPress)
 	{
+		System.out.println("inside function");
 		if(xPress.getXLeas().getData() != null)
 		{
+			System.out.println("have data");
 			for (XLeaType lea : xPress.getXLeas().getData())
 			{	
 				System.out.println("refId: " + lea.getRefId());

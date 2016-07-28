@@ -24,14 +24,14 @@ import com.jcraft.jsch.Session;
 
 
 public class ExportData {
-
+/*
 	public ExportData(Configuration config, GetDataFromApiTest data) {
 		
 		File file = setupOutputPath(config);
 	 
 		switch(config.getOutputSchema()){
 		     case GlobalUtilities.CSV: 
-		    	 new GenerateCsvFile(config,file,data);
+		    	 //new GenerateCsvFile(config,file,data);
 			 break;
 			 
 		     case GlobalUtilities.XML: 
@@ -55,7 +55,7 @@ public class ExportData {
 		}
 		
 	}
-	
+*/	
 	public ExportData(Configuration config, ArrayList<Data> data) {
 		
 		File file = setupOutputPath(config);

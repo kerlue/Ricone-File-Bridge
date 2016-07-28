@@ -171,29 +171,29 @@ public abstract class Configuration {
 
 	
      /**
- 	 * @param args void.
- 	 * @param Returns a list of column names. Each item in the list consist of a
- 	 *  string of column names that correspond with the required data field.
- 	 */
-     
-     public List<String> getColumnNames() {
-    	 
-    	 List<String> columnNames = new ArrayList<String>();
-     	
-    	 try{
-    		 for(int i=0; i < requiredJsonData.length(); i++){   			
-    		     JSONObject jsonObj = new JSONObject(requiredJsonData.get(""+i).toString());
-    		     columnNames.add(jsonObj.get("column_name").toString());
-    		 }
-    	 }catch(Exception e){
-    		 e.printStackTrace();
-    	 }
-    	 
-  		
-		return columnNames;
-	 }
-
-     
+  	 * @param args void.
+  	 * @param Returns a list of column names. Each item in the list consist of a
+  	 *  string of column names that correspond with the required data field.
+  	 */
+      
+      public List<String> getColumnNames() {
+     	 
+     	 List<String> columnNames = new ArrayList<String>();
+      	
+     	 try{
+     		 for(int i=0; i < requiredJsonData.length(); i++){   			
+     		     JSONObject jsonObj = new JSONObject(requiredJsonData.get(""+i).toString());
+     		     columnNames.add(jsonObj.get("column_name").toString());
+     		 }
+     	 }catch(Exception e){
+     		 e.printStackTrace();
+     	 }
+     	 
+   		
+ 		return columnNames;
+ 	 }
+      
+      
      /**
   	 * @param args void.
   	 * @param Returns a list of data to search for. Each item in the list consist of a

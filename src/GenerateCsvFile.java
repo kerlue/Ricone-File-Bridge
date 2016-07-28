@@ -2,12 +2,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.json.JSONObject;
 
 public class GenerateCsvFile{
-
+/*
 public GenerateCsvFile(Configuration config, File file, GetDataFromApiTest data) {
 		
 		GlobalUtilities.logInfo("Generating file...");
@@ -23,7 +24,8 @@ public GenerateCsvFile(Configuration config, File file, GetDataFromApiTest data)
 				//#######  Create column names for each files ########//
 				String columnNameStringList = config.getColumnNames().get(i);
 				
-				for(String columnName: columnNameStringList.split(",")){					
+				for(String columnName: columnNameStringList.split(",")){		
+					System.out.println(columnName);
 					writer.append(columnName);
 				    writer.append(',');
 				}
@@ -179,7 +181,7 @@ public GenerateCsvFile(Configuration config, File file, GetDataFromApiTest data)
 		
 	
 	}
-
+*/
 
 public GenerateCsvFile(File file, ArrayList<Data> data_list, Configuration config) {
 	
@@ -190,11 +192,27 @@ public GenerateCsvFile(File file, ArrayList<Data> data_list, Configuration confi
 			FileWriter writer = new FileWriter(file+File.separator+data.getFileName()+"." + config.getOutputSchema());
 			ArrayList<String> fields = new ArrayList<String>();			
 			//#######  Create column names for each files ########//			
-			for(String columnName: data.getColumnNames()){					
+//			for(String columnName: data.getColumnNames()){					
+//				writer.append(columnName);
+//			    writer.append(',');
+//			    fields.add(columnName);
+//			}
+			
+			List<String> columnNameStringList = config.getColumnNames();
+			
+			String columnNameString = "";
+			
+			for (int i=0; i < columnNameStringList.size(); ++i) {
+				if (config.getTextTitle().get(i).equals(data.getFileName())) {
+					columnNameString = columnNameStringList.get(i);
+				}
+			}
+			for(String columnName: columnNameString.split(",")){					
 				writer.append(columnName);
 			    writer.append(',');
 			    fields.add(columnName);
 			}
+			writer.append('\n');
 			
 			System.out.println("fields " + fields);
 			writer.append('\n');

@@ -75,7 +75,7 @@ public class DataReader {
     		} else {
     			temp = "";
     			st = s.split(" ");
-    			for (int j=1; j < st.length; ++j) {
+    			for (int j=0; j < st.length; ++j) {
     				if (st[j].equals("-g") && j < st.length-1) {
     					++j;
     					temp += st[j] + " ";
@@ -87,7 +87,7 @@ public class DataReader {
     			}
     			temp = temp.trim();
     			DataType d = new DataType(data_category,t_list1[i].trim(), temp);
-            	full_list.add(d);
+    			full_list.add(d);
     		}
     	}
     	
@@ -109,7 +109,8 @@ public class DataReader {
 		List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
 				
 		for(Endpoint e : auth.getEndpoints()) {
-			XPress xPress = new XPress(auth.getToken(), e.getHref());
+			//XPress xPress = new XPress(auth.getToken(), e.getHref());
+			XPress xPress = new XPress(auth.getToken(), "https://10.6.11.20/api/requests/");
 			list.addAll(DataRead(xPress,data_type_list));
 			//System.out.println(list);
 			//XLeas_GetXLeas(xPress);
@@ -118,7 +119,7 @@ public class DataReader {
 		return d;
     }
     
-    private <T> ArrayList<DataType> DRead(ArrayList<ArrayList<String>> commands, T var, String data_type) {
+    private <T> ArrayList<DataType> DRead(Class<T> clazz, ArrayList<ArrayList<String>> commands, T var, String data_type) {
     	ArrayList<DataType> data_point = new ArrayList<DataType>();
     	for (ArrayList<String> com : commands) {
 			Method m;
@@ -126,37 +127,37 @@ public class DataReader {
 				if (com.get(1).split(" ").length > 1) {
 					String[] t = com.get(1).split(" ");
 					if (t[0].equals("getAddress")) {
-						m = Object.class.getMethod(t[0]);
+						m = clazz.getMethod(t[0]);
 						Object t_obj = (m.invoke(var));
 						m = XOrganizationAddressType.class.getMethod(t[1]);
 						  	    							
 						DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
 						data_point.add(d);
 					} else if (t[0].equals("getName")) {
-						m = Object.class.getMethod(t[0]);
+						m = clazz.getMethod(t[0]);
 						Object t_obj = (m.invoke(var));
 						m = XPersonNameType.class.getMethod(t[1]);
 						
 						DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
 						data_point.add(d);
 					} else if (t[0].equals("getEmail")) {
-						m = Object.class.getMethod(t[0]);
+						m = clazz.getMethod(t[0]);
 						Object t_obj = (m.invoke(var));
 						m = XEmailType.class.getMethod(t[1]);
 						
 						DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
 						data_point.add(d);
 					} else {
-						System.err.println("Couldnt recognize " + t[0]);
+						System.err.println("151 - Couldnt recognize " + t[0]);
 					}
 				} else {
-					m = XSchoolType.class.getMethod(com.get(1));
+					m = clazz.getMethod(com.get(1));
 					 
 					DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(var)); // this line should associate the data pulled from the RICONE server with the user's function name
 					data_point.add(d);
 				}
 			} catch (NoSuchMethodException e) {
-				System.err.println("Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
+				System.err.println("160 - Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -169,7 +170,7 @@ public class DataReader {
     	return null;    	
     }
     
-    private <T,E> ArrayList<DataType> DRead(ArrayList<ArrayList<String>> commands, T var, E var2, String data_type) {
+    private <T,E> ArrayList<DataType> DRead(Class<T> clazz, Class<E> clazz2, ArrayList<ArrayList<String>> commands, T var, E var2, String data_type) {
     	ArrayList<DataType> data_point = new ArrayList<DataType>();
     	for (ArrayList<String> com : commands) {
 			Method m;
@@ -188,9 +189,9 @@ public class DataReader {
 							} else if (t[j].equals("getName")) {
 								m = XRosterType.class.getMethod(t[j]);
     							Object t_obj = (m.invoke(var));
-    							m = XPersonNameType.class.getMethod(t[j+1]);
-    							
+    							m = XPersonNameType.class.getMethod(t[j+1]);    							
     							t_str += m.invoke(t_obj);
+    							
 							} else if (t[j].equals("getEmail")) {
 								m = XRosterType.class.getMethod(t[j]);
     							Object t_obj = (m.invoke(var));
@@ -198,26 +199,36 @@ public class DataReader {
     							
     							t_str += m.invoke(t_obj);
 							} else if (t[j].equals("getStaffPersonReference")) {
-			
-								if (var2.getRefId().equals(var.getPrimaryStaff().getStaffPersonReference().getRefId())) {
-									XPersonReferenceType t_person = var.getPrimaryStaff().getStaffPersonReference();
+								//String str = (String)Object.class.getMethod(getRefId).invoke(Object.class.getMethod(getStaffPersonReference).invoke(Object.class.getMethod(getPrimaryStaff).invoke(var)));
+								String str = (String)XPersonReferenceType.class.getMethod("getRefId").invoke(XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var)));
+								String str2 = (String)clazz2.getMethod("getRefId").invoke(var2);
+								if (str2.equals(str)) {
+									XPersonReferenceType t_person = (XPersonReferenceType)XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var));
 	    							m = XPersonReferenceType.class.getMethod(t[j+1]);
 	    							
 	    							t_str += m.invoke(t_person);
 								} else {
-									for (XStaffReferenceType st : var.getOtherStaffs().getOtherStaff()) {
-										if (staff.getRefId().equals(st.getStaffPersonReference().getRefId())) {
+									for (XStaffReferenceType st : (List<XStaffReferenceType>)XStaffReferenceListType.class.getMethod("getOtherStaff").invoke(clazz.getMethod("getOtherStaffs").invoke(var))) {
+										if (str2.equals(st.getStaffPersonReference().getRefId())) {
 											m = XPersonReferenceType.class.getMethod(t[j+1]);
-	    	    							
-											
-	    	    							t_str += m.invoke(st);
+	    	    																		
+	    	    							t_str += (String)m.invoke(st);
 											break;
 										}
 									}
 								}
 								
 							} else {
-								System.err.println("Couldnt recognize " + t[j]);
+								m = XRosterType.class.getMethod(t[j]);
+								try {
+									t_str += m.invoke(var);
+								} catch (ClassCastException e) {
+									try {
+										t_str += m.invoke(var);
+									} catch (Exception ex) {
+										System.err.println("222 - Couldnt recognize " + t[j]);										
+									}
+								}
 							}
 							t_str += "_";
 						}
@@ -246,33 +257,53 @@ public class DataReader {
 							
 							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
 							data_point.add(d);
-						} else if (t[0].equals("getStaffPersonReference")) { 
-		
-							if (staff.getRefId().equals(var.getPrimaryStaff().getStaffPersonReference().getRefId())) {
-								XPersonReferenceType t_person = var.getPrimaryStaff().getStaffPersonReference();
+						} else if (t[0].equals("getStaffPersonReference")) {
+							String str = (String)XPersonReferenceType.class.getMethod("getRefId").invoke(XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var)));
+							String str2 = (String)clazz2.getMethod("getRefId").invoke(var2);
+							if (str2.equals(str)) {
+								XPersonReferenceType t_person = (XPersonReferenceType)XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var));
     							m = XPersonReferenceType.class.getMethod(t[1]);
     							
     							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_person)); // this line should associate the data pulled from the RICONE server with the user's function name
     							data_point.add(d);
 							} else {
-								for (XStaffReferenceType st : var.getOtherStaffs().getOtherStaff()) {
-									if (staff.getRefId().equals(st.getStaffPersonReference().getRefId())) {
+								for (XStaffReferenceType st : (List<XStaffReferenceType>)XStaffReferenceListType.class.getMethod("getOtherStaff").invoke(clazz.getMethod("getOtherStaffs").invoke(var))) { // TODO I dont think this actually works. Check for mismatch between staffpersonreferencetype and personreferencetype
+									if (str2.equals(st.getStaffPersonReference().getRefId())) {
 										m = XPersonReferenceType.class.getMethod(t[1]);
-    	    							
-    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(st)); // this line should associate the data pulled from the RICONE server with the user's function name
+    	    																	
+    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(st)); // this line should associate the data pulled from the RICONE server with the user's function name
     	    							data_point.add(d);
 										break;
 									}
 								}
 							}
 							
+						} else if (t[0].equals("-staff")) {
+							String str = (String)XPersonReferenceType.class.getMethod("getRefId").invoke(XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var)));
+							String str2 = (String)clazz2.getMethod("getRefId").invoke(var2);
+							if (str2.equals(str)) {
+								XStaffReferenceType t_person = (XStaffReferenceType)clazz.getMethod("getPrimaryStaff").invoke(var);
+    							m = XStaffReferenceType.class.getMethod(t[1]);
+    							
+    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_person)); // this line should associate the data pulled from the RICONE server with the user's function name
+    							data_point.add(d);
+							} else {
+								for (XStaffReferenceType st : (List<XStaffReferenceType>)XStaffReferenceListType.class.getMethod("getOtherStaff").invoke(clazz.getMethod("getOtherStaffs").invoke(var))) {
+									if (str2.equals(st.getStaffPersonReference().getRefId())) {
+										m = XStaffReferenceType.class.getMethod(t[1]);
+    	    																	
+    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(st)); // this line should associate the data pulled from the RICONE server with the user's function name
+    	    							data_point.add(d);
+										break;
+									}
+								}
+							}
 						} else {
-							System.err.println("Couldnt recognize " + t[0]);
+							System.err.println("274 - Couldnt recognize " + t[0]);
 						}
 					}
 				} else {
 					m = XRosterType.class.getMethod(com.get(1));
-					System.out.println(m.invoke(var));
 					try {
 						DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(var)); // this line should associate the data pulled from the RICONE server with the user's function name
 						data_point.add(d);
@@ -282,7 +313,7 @@ public class DataReader {
 					}
 				}
 			} catch (NoSuchMethodException e) {
-				System.err.println("Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
+				System.err.println("297 - Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -294,54 +325,60 @@ public class DataReader {
 		
     	return null;    	
     }
-    
+   
     
     public List<ArrayList<DataType>> DataRead(XPress xPress,List<DataType> data_highlevel_list) {
     	List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
     	String data_type;
     	data_type = data_highlevel_list.get(0).getDataCategory();
+
+    	
     	
     	ArrayList<ArrayList<String>> commands = new ArrayList<ArrayList<String>>();
     	for (DataType d : data_highlevel_list) {
     		commands.add(d.getCommandArray());
     	}
     	
+    	
     	if (ref_type.equals("Lea")) {
     		for (String rid : refid) {
     			switch (data_type) {
     				case "Lea": {
     					XLeaType var = xPress.getXLea(rid).getData();
-    					list.add(DRead(commands, var, data_type));
+    					list.add(DRead(XLeaType.class, commands, var, data_type));
+    					break;
     				}
     				case "School": {
-    					for (XSchoolType var : xPress.getXSchoolsByXLea(rid).getData()) { // loop through all schools in the district
-        					boolean grade_match = false;
-    						if (grade_nums != null) { // TODO Still need to test to make sure this grade matches correctly
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									for (String given_grade : var.getGradeLevels().getGradeLevel()) {
-    										if (desired_grade.equals(given_grade)) {
-    											grade_match = true;
-    											System.out.println("breaking");
-    											break;
-    										}
-    									}
-    								}
-    							}
-    						} else {
-    							grade_match = true;
-    						}
-    						if (grade_match) {
-    	    					list.add(DRead(commands, var, data_type));
-    						} else {
-    							System.out.println("here (no grade match)");
-    						}
+    					if (xPress.getXSchoolsByXLea(rid).getData() != null) {
+	    					for (XSchoolType var : xPress.getXSchoolsByXLea(rid).getData()) { // loop through all schools in the district
+	        					boolean grade_match = false;
+	    						if (grade_nums != null) { // TODO Still need to test to make sure this grade matches correctly
+	    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
+	    								if (!grade_match) {
+	    									for (String given_grade : var.getGradeLevels().getGradeLevel()) {
+	    										if (desired_grade.equals(given_grade)) {
+	    											grade_match = true;
+	    											System.out.println("breaking");
+	    											break;
+	    										}
+	    									}
+	    								}
+	    							}
+	    						} else {
+	    							grade_match = true;
+	    						}
+	    						if (grade_match) {
+	    	    					list.add(DRead(XSchoolType.class, commands, var, data_type));
+	    						} else {
+	    							System.out.println("here (no grade match)");
+	    						}
+	    					}
     					}
     					break;
     				}
     				case "Calendar": {
     					for (XCalendarType var : xPress.getXCalendarsByXLea(rid).getData()) { // loop through all calendars in the district
-        					list.add(DRead(commands, var, data_type));
+        					list.add(DRead(XCalendarType.class, commands, var, data_type));
     					}
     					break;
     				}
@@ -365,7 +402,7 @@ public class DataReader {
     						}
     						if (grade_match) {
 
-    	    					list.add(DRead(commands, var, data_type));
+    	    					list.add(DRead(XCourseType.class, commands, var, data_type));
     						} else {
     							System.out.println("here (no grade match)");
     						}
@@ -395,7 +432,18 @@ public class DataReader {
     						else {
     							grade_match = true;
     						}
+    						
     						if (commands.get(0).get(1).contains("-and")) {
+    							if (grade_match) {
+    								if (commands.get(0).get(1).contains("-andSTAFF")) {
+    									if (xPress.getXStaffsByXRoster(var.getRefId()).getData() != null) {
+		    								for (XStaffType staff : xPress.getXStaffsByXRoster(var.getRefId()).getData()) {
+		    	    	    					list.add(DRead(XRosterType.class, XStaffType.class, commands, var, staff, data_type));
+		    								}
+    									}
+    								}
+    							}
+    							/*
     							if (commands.get(0).get(1).contains("-andSTAFF")) {
 	    							for (XStaffType staff : xPress.getXStaffsByXRoster(var.getRefId()).getData()) {
 	    								ArrayList<DataType> data_point = new ArrayList<DataType>();
@@ -429,7 +477,7 @@ public class DataReader {
 	    	    					    							t_str += m.invoke(t_obj);
 	    	    												} else if (t[j].equals("getStaffPersonReference")) {
 	    	    								
-	    	    													if (var2.getRefId().equals(var.getPrimaryStaff().getStaffPersonReference().getRefId())) {
+	    	    													if (staff.getRefId().equals(var.getPrimaryStaff().getStaffPersonReference().getRefId())) {
 	    	    														XPersonReferenceType t_person = var.getPrimaryStaff().getStaffPersonReference();
 	    	    						    							m = XPersonReferenceType.class.getMethod(t[j+1]);
 	    	    						    							
@@ -502,7 +550,6 @@ public class DataReader {
 	    	    										}
 	    	    									} else {
 	    	    										m = XRosterType.class.getMethod(com.get(1));
-	    	    										System.out.println(m.invoke(var));
 	    	    										try {
 	    	    											DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(var)); // this line should associate the data pulled from the RICONE server with the user's function name
 	    	    											data_point.add(d);
@@ -525,63 +572,9 @@ public class DataReader {
 	    	        						list.add(data_point);
 	    	        					}
 	    							}
-    							}
-    						} else {
-    							ArrayList<DataType> data_point = new ArrayList<DataType>();
-	    						if (grade_match) {
-	    							for (ArrayList<String> com : commands) {
-	    								Method m;
-	    								try {
-	    									if (com.get(1).split(" ").length > 1) {
-	    	    								String[] t = com.get(1).split(" ");
-	    	    								if (t[0].equals("getAddress")) {
-	    	    									m = XRosterType.class.getMethod(t[0]);
-	    	    	    							Object t_obj = (m.invoke(var));
-	    	    	    							m = XOrganizationAddressType.class.getMethod(t[1]);
-	    	    	    							  	    							
-	    	    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    	    							data_point.add(d);
-	    	    								} else if (t[0].equals("getName")) {
-	    	    									m = XRosterType.class.getMethod(t[0]);
-	    	    	    							Object t_obj = (m.invoke(var));
-	    	    	    							m = XPersonNameType.class.getMethod(t[1]);
-	    	    	    							
-	    	    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    	    							data_point.add(d);
-	    	    								} else if (t[0].equals("getEmail")) {
-	    	    									m = XRosterType.class.getMethod(t[0]);
-	    	    	    							Object t_obj = (m.invoke(var));
-	    	    	    							m = XEmailType.class.getMethod(t[1]);
-	    	    	    							
-	    	    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    	    							data_point.add(d);
-	    	    								} else {
-	    	    									System.err.println("Couldnt recognize " + t[0]);
-	    	    								}
-	    	    							} else {
-	    		    							m = XRosterType.class.getMethod(com.get(1));
-	    		    							System.out.println(m.invoke(var));
-	    		    							try {
-	    		    								DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(var)); // this line should associate the data pulled from the RICONE server with the user's function name
-	        		    							data_point.add(d);
-	    		    							} catch (ClassCastException e) {
-	    		    								DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(var)); // this line should associate the data pulled from the RICONE server with the user's function name
-	        		    							data_point.add(d);
-	    		    							}
-	    	    							}
-	    								} catch (NoSuchMethodException e) {
-	    									System.err.println("Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
-	    									e.printStackTrace();
-	    								} catch (Exception e) {
-	    									e.printStackTrace();
-	    								}
-	    							}
-	    						} else {
-	    							System.out.println("here (no grade match)");
-	    						}
-	        					if (!data_point.isEmpty()) {
-	        						list.add(data_point);
-	        					}
+    							}*/
+    						} else {    							
+    	    					list.add(DRead(XRosterType.class, commands, var, data_type));
     						}
     						
     					}
@@ -614,7 +607,7 @@ public class DataReader {
     							grade_match = true;
     						}
     						if (grade_match) {
-    	    					list.add(DRead(commands, var, data_type));
+    	    					list.add(DRead(XStaffType.class, commands, var, data_type));
     						} else {
     							System.out.println("here (no grade match)");
     						}
@@ -648,7 +641,7 @@ public class DataReader {
     							grade_match = true;
     						}
     						if (grade_match) {
-    	    					list.add(DRead(commands, var, data_type));
+    	    					list.add(DRead(XStudentType.class, commands, var, data_type));
     						} else {
     							System.out.println("here (no grade match)");
     						}
@@ -686,7 +679,7 @@ public class DataReader {
     							grade_match = true;
     						}
     						if (grade_match) {
-    	    					list.add(DRead(commands, var, data_type));
+    	    					list.add(DRead(XContactType.class, commands, var, data_type));
     						} else {
     							System.out.println("here (no grade match)");
     						}
@@ -705,7 +698,7 @@ public class DataReader {
     			switch (data_type) {
     				case "Lea": {
     					for (XLeaType var : xPress.getXLeasByXSchool(rid).getData()) {
-        					list.add(DRead(commands, var, data_type));
+        					list.add(DRead(XLeaType.class, commands, var, data_type));
     					}
     					break;
     				}
@@ -728,7 +721,7 @@ public class DataReader {
     						grade_match = true;
     					}
     					if (grade_match) {
-        					list.add(DRead(commands, var, data_type));
+        					list.add(DRead(XSchoolType.class, commands, var, data_type));
     					} else {
     						System.out.println("here (no grade match)");
     					}
@@ -736,7 +729,7 @@ public class DataReader {
     				}
     				case "Calendar": {
     					for (XCalendarType var : xPress.getXCalendarsByXSchool(rid).getData()) { // loop through all calendars in the district
-    						list.add(DRead(commands, var, data_type));
+    						list.add(DRead(XCalendarType.class, commands, var, data_type));
     					}
     					break;
     				}
@@ -759,7 +752,7 @@ public class DataReader {
     							grade_match = true;
     						}
     						if (grade_match) {
-    							list.add(DRead(commands, var, data_type));
+    							list.add(DRead(XCourseType.class, commands, var, data_type));
     						} else {
     							System.out.println("here (no grade match)");
     						}
@@ -868,7 +861,7 @@ public class DataReader {
     							grade_match = true;
     						}
     						if (grade_match) {
-    							list.add(DRead(commands, var, data_type));
+    							list.add(DRead(XStaffType.class, commands, var, data_type));
     						} else {
     							System.out.println("here (no grade match)");
     						}
@@ -902,7 +895,7 @@ public class DataReader {
     							grade_match = true;
     						}
     						if (grade_match) {
-    							list.add(DRead(commands, var, data_type));
+    							list.add(DRead(XStudentType.class, commands, var, data_type));
     						} else {
     							System.out.println("here (no grade match)");
     						}
@@ -940,7 +933,7 @@ public class DataReader {
     							grade_match = true;
     						}
     						if (grade_match) {
-    							list.add(DRead(commands, var, data_type));
+    							list.add(DRead(XContactType.class, commands, var, data_type));
     						} else {
     							System.out.println("here (no grade match)");
     						}

@@ -58,4 +58,8 @@ public class DataType {
 		temp.add(command_name);
 		return temp;
 	}
+	
+	public void Print() {
+		System.out.println("o_name: " + outside_name + " c_name: " + command_name);
+	}
 }
