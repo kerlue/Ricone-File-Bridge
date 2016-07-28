@@ -186,18 +186,20 @@ public class DataReader {
     							m = XOrganizationAddressType.class.getMethod(t[j+1]);
     							  	    							
     							t_str += m.invoke(t_obj);
+    							++j;
 							} else if (t[j].equals("getName")) {
 								m = XRosterType.class.getMethod(t[j]);
     							Object t_obj = (m.invoke(var));
     							m = XPersonNameType.class.getMethod(t[j+1]);    							
     							t_str += m.invoke(t_obj);
-    							
+    							++j;
 							} else if (t[j].equals("getEmail")) {
 								m = XRosterType.class.getMethod(t[j]);
     							Object t_obj = (m.invoke(var));
     							m = XEmailType.class.getMethod(t[j+1]);
     							
     							t_str += m.invoke(t_obj);
+    							++j;
 							} else if (t[j].equals("getStaffPersonReference")) {
 								//String str = (String)Object.class.getMethod(getRefId).invoke(Object.class.getMethod(getStaffPersonReference).invoke(Object.class.getMethod(getPrimaryStaff).invoke(var)));
 								String str = (String)XPersonReferenceType.class.getMethod("getRefId").invoke(XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var)));
@@ -207,27 +209,57 @@ public class DataReader {
 	    							m = XPersonReferenceType.class.getMethod(t[j+1]);
 	    							
 	    							t_str += m.invoke(t_person);
+	    							++j;
 								} else {
+									Boolean found = false;
 									for (XStaffReferenceType st : (List<XStaffReferenceType>)XStaffReferenceListType.class.getMethod("getOtherStaff").invoke(clazz.getMethod("getOtherStaffs").invoke(var))) {
 										if (str2.equals(st.getStaffPersonReference().getRefId())) {
 											m = XPersonReferenceType.class.getMethod(t[j+1]);
 	    	    																		
-	    	    							t_str += (String)m.invoke(st);
+	    	    							t_str += (String)m.invoke(st.getStaffPersonReference());
+	    	    							++j;
+	    	    							found = true;
 											break;
 										}
 									}
+									if (!found) {
+										return null;
+									}
 								}
 								
+							} else if (t[j].equals("-staff")) {
+								String str = (String)XPersonReferenceType.class.getMethod("getRefId").invoke(XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var)));
+								String str2 = (String)clazz2.getMethod("getRefId").invoke(var2);
+								if (str2.equals(str)) {
+									XStaffReferenceType t_person = (XStaffReferenceType)clazz.getMethod("getPrimaryStaff").invoke(var);
+	    							m = XStaffReferenceType.class.getMethod(t[j+1]);
+	    							
+	    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_person)); // this line should associate the data pulled from the RICONE server with the user's function name
+	    							data_point.add(d);
+	    							++j;
+								} else {
+									boolean found = false;
+									for (XStaffReferenceType st : (List<XStaffReferenceType>)XStaffReferenceListType.class.getMethod("getOtherStaff").invoke(clazz.getMethod("getOtherStaffs").invoke(var))) {
+										if (str2.equals(st.getStaffPersonReference().getRefId())) {
+											m = XStaffReferenceType.class.getMethod(t[j+1]);
+	    	    																	
+	    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(st)); // this line should associate the data pulled from the RICONE server with the user's function name
+	    	    							data_point.add(d);
+	    	    							++j;
+	    	    							found = true;
+											break;
+										}
+									}
+									if (!found) {
+										return null;
+									}
+								}
 							} else {
 								m = XRosterType.class.getMethod(t[j]);
 								try {
 									t_str += m.invoke(var);
 								} catch (ClassCastException e) {
-									try {
-										t_str += m.invoke(var);
-									} catch (Exception ex) {
-										System.err.println("222 - Couldnt recognize " + t[j]);										
-									}
+									System.err.println("246 - Couldnt recognize " + t[j]);	
 								}
 							}
 							t_str += "_";
@@ -267,11 +299,11 @@ public class DataReader {
     							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_person)); // this line should associate the data pulled from the RICONE server with the user's function name
     							data_point.add(d);
 							} else {
-								for (XStaffReferenceType st : (List<XStaffReferenceType>)XStaffReferenceListType.class.getMethod("getOtherStaff").invoke(clazz.getMethod("getOtherStaffs").invoke(var))) { // TODO I dont think this actually works. Check for mismatch between staffpersonreferencetype and personreferencetype
+								for (XStaffReferenceType st : (List<XStaffReferenceType>)XStaffReferenceListType.class.getMethod("getOtherStaff").invoke(clazz.getMethod("getOtherStaffs").invoke(var))) { 
 									if (str2.equals(st.getStaffPersonReference().getRefId())) {
 										m = XPersonReferenceType.class.getMethod(t[1]);
     	    																	
-    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(st)); // this line should associate the data pulled from the RICONE server with the user's function name
+    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(st.getStaffPersonReference())); // this line should associate the data pulled from the RICONE server with the user's function name
     	    							data_point.add(d);
 										break;
 									}
@@ -350,8 +382,12 @@ public class DataReader {
     				}
     				case "School": {
     					if (xPress.getXSchoolsByXLea(rid).getData() != null) {
+    						int size = xPress.getXSchoolsByXLea(rid).getData().size();
+    						int num = 0;
 	    					for (XSchoolType var : xPress.getXSchoolsByXLea(rid).getData()) { // loop through all schools in the district
-	        					boolean grade_match = false;
+	    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+		    					System.out.println();
+		    					++num;	 boolean grade_match = false;
 	    						if (grade_nums != null) { // TODO Still need to test to make sure this grade matches correctly
 	    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
 	    								if (!grade_match) {
@@ -377,14 +413,24 @@ public class DataReader {
     					break;
     				}
     				case "Calendar": {
+    					int size = xPress.getXCalendarsByXLea(rid).getData().size();
+						int num = 0;
     					for (XCalendarType var : xPress.getXCalendarsByXLea(rid).getData()) { // loop through all calendars in the district
-        					list.add(DRead(XCalendarType.class, commands, var, data_type));
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
+    						list.add(DRead(XCalendarType.class, commands, var, data_type));
     					}
     					break;
     				}
     				case "Course": {
+    					int size = xPress.getXCoursesByXLea(rid).getData().size();
+						int num = 0;
     					for (XCourseType var : xPress.getXCoursesByXLea(rid).getData()) { // loop through all courses in the district
-        					boolean grade_match = false;
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
+    						boolean grade_match = false;
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
     								if (!grade_match) {
@@ -410,179 +456,83 @@ public class DataReader {
     					break;
     				}
     				case "Roster": {
-    					for (XRosterType var : xPress.getXRostersByXLea(rid).getData()) { // loop through all rosters in the district
-        					boolean grade_match = false;
-    						if (grade_nums != null) { // 
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									for (XCourseType temp : xPress.getXCoursesByXRoster(var.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
-    										if (!grade_match) {
-    											for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-    												if (desired_grade.equals(given_grade)) {
-    													grade_match = true;
-    													System.out.println("breaking");
-    													break;
-    												}
-    											}
-    										}
-    									}
-    								}
-    							}
-    						} 
-    						else {
-    							grade_match = true;
-    						}
-    						
-    						if (commands.get(0).get(1).contains("-and")) {
-    							if (grade_match) {
-    								if (commands.get(0).get(1).contains("-andSTAFF")) {
-    									if (xPress.getXStaffsByXRoster(var.getRefId()).getData() != null) {
-		    								for (XStaffType staff : xPress.getXStaffsByXRoster(var.getRefId()).getData()) {
-		    	    	    					list.add(DRead(XRosterType.class, XStaffType.class, commands, var, staff, data_type));
-		    								}
-    									}
-    								}
-    							}
-    							/*
-    							if (commands.get(0).get(1).contains("-andSTAFF")) {
-	    							for (XStaffType staff : xPress.getXStaffsByXRoster(var.getRefId()).getData()) {
-	    								ArrayList<DataType> data_point = new ArrayList<DataType>();
-	    	    						if (grade_match) {
-	    	    							//TODO here!!
-	    	    							for (ArrayList<String> com : commands) {
-	    	    								Method m;
-	    	    								try {
-	    	    									if (com.get(1).split(" ").length > 1) {
-	    	    										String[] t = com.get(1).split(" ");
-	    	    										if (t[0].equals("-andSTAFF")) {
-	    	    											String t_str = "";
-	    	    											for (int j=1; j < t.length; ++j) {
-	    	    												if (t[j].equals("getAddress")) {
-	    	    													m = XRosterType.class.getMethod(t[j]);
-	    	    					    							Object t_obj = (m.invoke(var));
-	    	    					    							m = XOrganizationAddressType.class.getMethod(t[j+1]);
-	    	    					    							  	    							
-	    	    					    							t_str += m.invoke(t_obj);
-	    	    												} else if (t[j].equals("getName")) {
-	    	    													m = XRosterType.class.getMethod(t[j]);
-	    	    					    							Object t_obj = (m.invoke(var));
-	    	    					    							m = XPersonNameType.class.getMethod(t[j+1]);
-	    	    					    							
-	    	    					    							t_str += m.invoke(t_obj);
-	    	    												} else if (t[j].equals("getEmail")) {
-	    	    													m = XRosterType.class.getMethod(t[j]);
-	    	    					    							Object t_obj = (m.invoke(var));
-	    	    					    							m = XEmailType.class.getMethod(t[j+1]);
-	    	    					    							
-	    	    					    							t_str += m.invoke(t_obj);
-	    	    												} else if (t[j].equals("getStaffPersonReference")) {
-	    	    								
-	    	    													if (staff.getRefId().equals(var.getPrimaryStaff().getStaffPersonReference().getRefId())) {
-	    	    														XPersonReferenceType t_person = var.getPrimaryStaff().getStaffPersonReference();
-	    	    						    							m = XPersonReferenceType.class.getMethod(t[j+1]);
-	    	    						    							
-	    	    						    							t_str += m.invoke(t_person);
-	    	    													} else {
-	    	    														for (XStaffReferenceType st : var.getOtherStaffs().getOtherStaff()) {
-	    	    															if (staff.getRefId().equals(st.getStaffPersonReference().getRefId())) {
-	    	    																m = XPersonReferenceType.class.getMethod(t[j+1]);
-	    	    						    	    							
-	    	    																
-	    	    						    	    							t_str += m.invoke(st);
-	    	    																break;
-	    	    															}
-	    	    														}
-	    	    													}
-	    	    													
-	    	    												} else {
-	    	    													System.err.println("Couldnt recognize " + t[j]);
-	    	    												}
-	    	    												t_str += "_";
-	    	    											}
-	    	    											DataType d = new DataType(data_type,com.get(0),com.get(1),t_str.substring(0,t_str.length()-1)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    											data_point.add(d);
-	    	    											
-	    	    										} else {
-	    	    											if (t[0].equals("getAddress")) {
-	    	    												m = XRosterType.class.getMethod(t[0]);
-	    	    												Object t_obj = (m.invoke(var));
-	    	    												m = XOrganizationAddressType.class.getMethod(t[1]);
-	    	    												  	    							
-	    	    												DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    												data_point.add(d);
-	    	    											} else if (t[0].equals("getName")) {
-	    	    												m = XRosterType.class.getMethod(t[0]);
-	    	    												Object t_obj = (m.invoke(var));
-	    	    												m = XPersonNameType.class.getMethod(t[1]);
-	    	    												
-	    	    												DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    												data_point.add(d);
-	    	    											} else if (t[0].equals("getEmail")) {
-	    	    												m = XRosterType.class.getMethod(t[0]);
-	    	    												Object t_obj = (m.invoke(var));
-	    	    												m = XEmailType.class.getMethod(t[1]);
-	    	    												
-	    	    												DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    												data_point.add(d);
-	    	    											} else if (t[0].equals("getStaffPersonReference")) { 
-	    	    							
-	    	    												if (staff.getRefId().equals(var.getPrimaryStaff().getStaffPersonReference().getRefId())) {
-	    	    													XPersonReferenceType t_person = var.getPrimaryStaff().getStaffPersonReference();
-	    	    					    							m = XPersonReferenceType.class.getMethod(t[1]);
-	    	    					    							
-	    	    					    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_person)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    					    							data_point.add(d);
-	    	    												} else {
-	    	    													for (XStaffReferenceType st : var.getOtherStaffs().getOtherStaff()) {
-	    	    														if (staff.getRefId().equals(st.getStaffPersonReference().getRefId())) {
-	    	    															m = XPersonReferenceType.class.getMethod(t[1]);
-	    	    					    	    							
-	    	    					    	    							DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(st)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    					    	    							data_point.add(d);
-	    	    															break;
-	    	    														}
-	    	    													}
-	    	    												}
-	    	    												
-	    	    											} else {
-	    	    												System.err.println("Couldnt recognize " + t[0]);
-	    	    											}
-	    	    										}
-	    	    									} else {
-	    	    										m = XRosterType.class.getMethod(com.get(1));
-	    	    										try {
-	    	    											DataType d = new DataType(data_type,com.get(0),com.get(1),(String)m.invoke(var)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    											data_point.add(d);
-	    	    										} catch (ClassCastException e) {
-	    	    											DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(var)); // this line should associate the data pulled from the RICONE server with the user's function name
-	    	    											data_point.add(d);
-	    	    										}
-	    	    									}
-	    	    								} catch (NoSuchMethodException e) {
-	    	    									System.err.println("Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
-	    	    									e.printStackTrace();
-	    	    								} catch (Exception e) {
-	    	    									e.printStackTrace();
-	    	    								}
-	    	    							}
-	    	    						} else {
-	    	    							System.out.println("here (no grade match)");
-	    	    						}
-	    	        					if (!data_point.isEmpty()) {
-	    	        						list.add(data_point);
-	    	        					}
+    					if (xPress.getXRostersByXLea(rid).getData() != null) {
+    						int size = xPress.getXRostersByXLea(rid).getData().size();
+    						int num = 0;
+	    					for (XRosterType var : xPress.getXRostersByXLea(rid).getData()) { // loop through all rosters in the district
+	    						if (num%5 == 0) {
+	    							System.out.printf("Completed %.2f%%", (float)num*100/size);
+		    						System.out.println();
+	    						}
+	    						++num;	    						
+	        					boolean grade_match = false;
+	    						if (grade_nums != null) { // 
+	    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
+	    								if (!grade_match) {
+	    									for (XCourseType temp : xPress.getXCoursesByXRoster(var.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
+	    										if (!grade_match) {
+	    											for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
+	    												if (desired_grade.equals(given_grade)) {
+	    													grade_match = true;
+	    													System.out.println("breaking");
+	    													break;
+	    												}
+	    											}
+	    										}
+	    									}
+	    								}
 	    							}
-    							}*/
-    						} else {    							
-    	    					list.add(DRead(XRosterType.class, commands, var, data_type));
-    						}
-    						
+	    						} 
+	    						else {
+	    							grade_match = true;
+	    						}
+	    						
+	    						if (commands.get(0).get(1).contains("-and")) {
+	    							if (grade_match) {
+	    								if (commands.get(0).get(1).contains("-andSTAFF")) {
+	    									List<XStaffType> ls = xPress.getXStaffsByXRoster(var.getRefId()).getData();
+	    									if (ls != null) {
+	    										try {
+				    								for (XStaffType staff : ls) {
+				    									try {
+				    										ArrayList<DataType> t_ls = DRead(XRosterType.class, XStaffType.class, commands, var, staff, data_type);
+				    									
+					    	    	    					if (t_ls != null) {
+					    	    	    						list.add(t_ls);
+					    	    	    					}
+				    									} catch (Exception ex) {
+				    										ex.printStackTrace();
+				    									}
+				    								}
+	    										} catch (Exception e) {
+	    											e.printStackTrace();
+	    											System.err.println("RefId: " + var.getRefId());
+	    											System.err.println("Data: " + xPress.getXStaffsByXRoster(var.getRefId()).getData());
+	    											System.err.println("Data: " + ls);
+	    											System.err.println("Header: " + xPress.getXStaffsByXRoster(var.getRefId()).getHeader());
+	    											System.err.println("StatusCode: " + xPress.getXStaffsByXRoster(var.getRefId()).getStatusCode());
+	    											System.err.println("Message: " + xPress.getXStaffsByXRoster(var.getRefId()).getMessage());
+	    											System.exit(1); // TODO Figure out what is causing these errors and fix
+	    										}
+	    									}
+	    								}
+	    							}
+	    						} else {    							
+	    	    					list.add(DRead(XRosterType.class, commands, var, data_type));
+	    						}
+	    						
+	    					}
     					}
     					break;
     				}
     				case "Staff": {
+    					int size = xPress.getXStaffsByXLea(rid).getData().size();
+						int num = 0;
     					for (XStaffType var : xPress.getXStaffsByXLea(rid).getData()) { // loop through all staffs in the district
-        					boolean grade_match = false;
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;	 
+    						boolean grade_match = false;
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
     								if (!grade_match) {
@@ -615,7 +565,12 @@ public class DataReader {
     					break;
     				}
     				case "Student": {
+    					int size = xPress.getXStudentsByXLea(rid).getData().size();
+						int num = 0;
     					for (XStudentType var : xPress.getXStudentsByXLea(rid).getData()) { // loop through all students in the district
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;	
     						boolean grade_match = false;
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
@@ -649,7 +604,12 @@ public class DataReader {
     					break;
     				}
     				case "Contact": {
+    					int size = xPress.getXContactsByXLea(rid).getData().size();
+						int num = 0;
     					for (XContactType var : xPress.getXContactsByXLea(rid).getData()) { // loop through all contacts in the district
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
     						boolean grade_match = false;
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
@@ -697,8 +657,13 @@ public class DataReader {
     		for (String rid : refid) {
     			switch (data_type) {
     				case "Lea": {
+    					int size = xPress.getXLeasByXSchool(rid).getData().size();
+						int num = 0;
     					for (XLeaType var : xPress.getXLeasByXSchool(rid).getData()) {
-        					list.add(DRead(XLeaType.class, commands, var, data_type));
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
+    						list.add(DRead(XLeaType.class, commands, var, data_type));
     					}
     					break;
     				}
@@ -728,13 +693,23 @@ public class DataReader {
     					break;
     				}
     				case "Calendar": {
+    					int size = xPress.getXCalendarsByXSchool(rid).getData().size();
+						int num = 0;
     					for (XCalendarType var : xPress.getXCalendarsByXSchool(rid).getData()) { // loop through all calendars in the district
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;	
     						list.add(DRead(XCalendarType.class, commands, var, data_type));
     					}
     					break;
     				}
     				case "Course": {
+    					int size = xPress.getXCoursesByXSchool(rid).getData().size();
+						int num = 0;
     					for (XCourseType var : xPress.getXCoursesByXSchool(rid).getData()) { // loop through all courses in the district
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
     						boolean grade_match = false;
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
@@ -760,7 +735,12 @@ public class DataReader {
     					break;
     				}
     				case "Roster": {
+    					int size = xPress.getXRostersByXSchool(rid).getData().size();
+						int num = 0;
     					for (XRosterType var : xPress.getXRostersByXSchool(rid).getData()) { // loop through all rosters in the district
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
     						ArrayList<DataType> data_point = new ArrayList<DataType>();
         					boolean grade_match = false;
     						if (grade_nums != null) { // 
@@ -835,7 +815,12 @@ public class DataReader {
     					break;
     				}
     				case "Staff": {
+    					int size = xPress.getXStaffsByXSchool(rid).getData().size();
+						int num = 0;
     					for (XStaffType var : xPress.getXStaffsByXSchool(rid).getData()) { // loop through all staffs in the district
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
     						boolean grade_match = false;
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
@@ -870,7 +855,12 @@ public class DataReader {
     					break;
     				}
     				case "Student": {
+    					int size = xPress.getXStudentsByXSchool(rid).getData().size();
+						int num = 0;
     					for (XStudentType var : xPress.getXStudentsByXSchool(rid).getData()) { // loop through all students in the district
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
     						boolean grade_match = false;
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
@@ -904,7 +894,12 @@ public class DataReader {
     					break;
     				}
     				case "Contact": {
+    					int size = xPress.getXContactsByXSchool(rid).getData().size();
+						int num = 0;
     					for (XContactType var : xPress.getXContactsByXSchool(rid).getData()) { // loop through all contacts in the district
+    						System.out.printf("Completed %.2f%%", (float)num*100/size);
+	    					System.out.println();
+	    					++num;
     						boolean grade_match = false;
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
