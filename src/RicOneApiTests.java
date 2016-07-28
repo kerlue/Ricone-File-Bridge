@@ -38,9 +38,8 @@ public class RicOneApiTests
 	// Test Constants
 	final static String authUrl = "https://auth.ricone.org/login";
 	final static String clientId = "RICOneFileBridge";
-	final static String clientSecret = "d4506da077a8454640d7007a501d8170f7";
-    
-	
+	final static String clientSecret = "redacted";
+    	
 	static String refId = "25A10C7C-1BA5-4174-BA3F-1FA81849D076";
 
 	static String ref = "0E4E12EC-E5C5-455F-BE7C-ACC3E78A2F42,"
