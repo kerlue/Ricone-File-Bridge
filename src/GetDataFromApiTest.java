@@ -30,7 +30,6 @@ import riconeapi.models.xpress.XStudentType;
 import riconeapi.models.xpress.XTelephoneType;
 
 public class GetDataFromApiTest {
-	
 
 		static String refId = null;
 		// These objects will store the results from the api into Json format.

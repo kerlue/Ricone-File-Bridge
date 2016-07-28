@@ -17,8 +17,7 @@ import riconeapi.models.xpress.XOrganizationAddressType;
 
 public class MainDriver {
 	public static void main(String[] args){
-		
-		
+				
 		Util.disableSslVerification();   // TODO remove this line before going to production
 		Configuration config = new LoadConfiguration();
 		

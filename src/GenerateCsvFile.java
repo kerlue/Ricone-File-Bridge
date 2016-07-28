@@ -185,6 +185,7 @@ public GenerateCsvFile(Configuration config, File file, GetDataFromApiTest data)
 
 public GenerateCsvFile(File file, ArrayList<Data> data_list, Configuration config) {
 	
+	
 	GlobalUtilities.logInfo("Generating file...");
 	try {
 		for (Data data : data_list) {

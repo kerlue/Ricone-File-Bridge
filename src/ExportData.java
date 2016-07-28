@@ -74,8 +74,7 @@ public class ExportData {
 			 break;
 			 
 		 }
-	
-		
+			
 		if(config.getOutputExport().matches(GlobalUtilities.SFTP)){
 			pushFileToSftpServer(file.getAbsolutePath(), config);
 		}

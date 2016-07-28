@@ -7,7 +7,6 @@ import java.util.ArrayList;
  * Updated: 7/25/2016
 */////////////////////////////////////////////////
 
-
 public class DataType {
 	private String data_category;  // Lea, School, Student, etc.
 	private String outside_name;   // user readable name (specified in config file)
