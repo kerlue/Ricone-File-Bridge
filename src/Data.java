@@ -6,8 +6,10 @@
 */////////////////////////////////////////////////
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 
@@ -38,7 +40,8 @@ public class Data {
 	}
 
 	List<TreeMap<String,Object>> getData() {
-		return l;
+		Set<TreeMap<String,Object>> temp_set = new LinkedHashSet<>(l); // ensure duplicate values are removed
+		return new ArrayList<TreeMap<String,Object>>(temp_set);
 	}
 	
 	String getFileName() {

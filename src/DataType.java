@@ -61,4 +61,8 @@ public class DataType {
 	public void Print() {
 		System.out.println("o_name: " + outside_name + " c_name: " + command_name);
 	}
+	
+	public void Print2() {
+		System.out.println("o_name: " + outside_name + " c_name: " + command_name + " c_result: " + command_result);
+	}
 }
