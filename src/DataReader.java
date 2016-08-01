@@ -123,6 +123,10 @@ public class DataReader {
 		return d;
     }
     
+    private <T> Object SpecialCase(String special_case, Class<T> clazz) {
+    	return null;
+    }
+    
     private <T> ArrayList<DataType> DRead(Class<T> clazz, ArrayList<ArrayList<String>> commands, T var, String data_type) {
     	ArrayList<DataType> data_point = new ArrayList<DataType>();
     	for (ArrayList<String> com : commands) {
@@ -150,6 +154,29 @@ public class DataReader {
 						m = XEmailType.class.getMethod(t[1]);
 						
 						DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
+						data_point.add(d);
+					} else if (t[0].equals("getEnrollment")) {
+						m = clazz.getMethod(t[0]);
+						Object t_obj = (m.invoke(var));
+						m = XEnrollmentType.class.getMethod(t[1]);
+						
+						DataType d = new DataType(data_type,com.get(0),com.get(1),m.invoke(t_obj)); // this line should associate the data pulled from the RICONE server with the user's function name
+						data_point.add(d);
+					} else if (t[0].equals("getGradeLevels")) {
+						String temp_str = "\"";
+						m = clazz.getMethod(t[0]);
+						Object t_obj = (m.invoke(var));
+						m = XGradeLevelListType.class.getMethod(t[1]);
+						for (String t_s : (List<String>)m.invoke(t_obj)) {
+							temp_str += t_s + ", ";
+						}
+						if (temp_str.length() > 1) {
+							temp_str = temp_str.substring(0,(temp_str.length()-2)) + "\"";
+						} else {
+							temp_str = "";
+						}
+						
+						DataType d = new DataType(data_type,com.get(0),com.get(1),temp_str); // this line should associate the data pulled from the RICONE server with the user's function name
 						data_point.add(d);
 					} else {
 						System.err.println("151 - Couldnt recognize " + t[0]);
@@ -543,7 +570,9 @@ public class DataReader {
 	    						if (grade_nums != null) { // 
 	    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
 	    								if (!grade_match) {
-	    									for (XCourseType temp : xPress.getXCoursesByXRoster(var.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
+	    									List<XCourseType> dat;
+	    									if ((dat = xPress.getXCoursesByXRoster(var.getRefId()).getData()) != null) {
+	    									for (XCourseType temp : dat) { // get the course associated with the roster (needed to pull grade level information
 	    										if (!grade_match) {
 	    											for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
 	    												if (desired_grade.equals(given_grade)) {
@@ -553,6 +582,7 @@ public class DataReader {
 	    												}
 	    											}
 	    										}
+	    									}
 	    									}
 	    								}
 	    							}
@@ -638,7 +668,9 @@ public class DataReader {
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
     								if (!grade_match) {
-    									for (XRosterType roster : xPress.getXRostersByXStaff(var.getRefId()).getData()) {		
+    									List<XRosterType> dat;
+    									if ((dat = xPress.getXRostersByXStaff(var.getRefId()).getData()) != null) {    										
+    									for (XRosterType roster : dat) {		
     										if (!grade_match) {
     											for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
     												if (!grade_match) {
@@ -653,6 +685,7 @@ public class DataReader {
     											}
     										}
     									}
+    									} 
     								}
     							}
     						} else {
@@ -677,9 +710,13 @@ public class DataReader {
     						if (grade_nums != null) { // 
     							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
     								if (!grade_match) {
-    									for (XRosterType roster : xPress.getXRostersByXStudent(var.getRefId()).getData()) {		
+    								List<XRosterType> dat;
+									if ((dat = xPress.getXRostersByXStudent(var.getRefId()).getData()) != null) {
+    									for (XRosterType roster : dat) {		
     										if (!grade_match) {
-    											for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
+    											List<XCourseType> dat2;
+    											if ((dat2=xPress.getXCoursesByXRoster(roster.getRefId()).getData()) != null) {
+    											for (XCourseType temp : dat2) { // get the course associated with the roster (needed to pull grade level information
     												if (!grade_match) {
     													for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
     														if (desired_grade.equals(given_grade)) {
@@ -690,8 +727,10 @@ public class DataReader {
     													}
     												}
     											}
+    											}
     										}
     									}
+    								}
     								}
     							}
     						} else {
