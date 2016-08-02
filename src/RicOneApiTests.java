@@ -40,7 +40,13 @@ public class RicOneApiTests
 	final static String clientId = "RICOneFileBridge";
 	final static String clientSecret = "redacted";
     	
-	static String refId = "25A10C7C-1BA5-4174-BA3F-1FA81849D076";
+	//static String refId = "15077B52-7D2A-4855-B41F-37FBA242522E"; // Lea RefId
+	static String refId = "A5CA3C70-3254-489C-97F8-ED1A2D76FF33"; // School RefId
+	
+	static String[] reId = new String[]{"25A10C7C-1BA5-4174-BA3F-1FA81849D076",
+			"8BEF9874-983E-4D9C-AA1C-629A5AF58F17",
+			"A5CA3C70-3254-489C-97F8-ED1A2D76FF33",
+			"CA662096-C412-4DA4-9011-968011E05FAA"};
 
 	static String ref = "0E4E12EC-E5C5-455F-BE7C-ACC3E78A2F42,"
 			+ "25A10C7C-1BA5-4174-BA3F-1FA81849D076,"
@@ -80,7 +86,8 @@ public class RicOneApiTests
 			XPress xPress = new XPress(auth.getToken(), "https://10.6.11.20/api/requests/");
 			//XPress xPress = new XPress(auth.getToken(), e.getHref());
 			//System.out.println("xPress ref: ----> "+ xPress);
-			XLeas_GetXLeas(xPress);
+			//XLeas_GetXLeas(xPress);
+			XSchools_GetXSchool(xPress);
 			//XRosters_GetXRostersByXSchool(xPress);
 			//XCourses_GetXCourses(xPress);
 			//XRosters_GetXRosters(xPress);
@@ -88,6 +95,17 @@ public class RicOneApiTests
 			//XCourses_GetXCourses(xPress);
 			//XStaffs_GetXStaffs(xPress);
 			//XStudents_GetXStudent(xPress);
+//			for (int i=0; i < 4; ++i) {
+//				for (XRosterType roster : xPress.getXRostersByXSchool(reId[i]).getData()) {
+//					System.out.println(xPress.getXStaffsByXRoster(roster.getRefId()).getData().size());
+//				}
+//				System.out.println("-----------------------------------------------");
+//			}
+			//XStaffs_GetXStaffsByXSchool(xPress);
+			//XStaffs_GetXStaffsByXLea(xPress);
+			//XRosters_GetXRoster(xPress);
+			//XStaffs_GetXStaffsByXRoster(xPress,"3069835A-2276-4AC0-A599-3E5C171716D3");
+			
 		}
 		System.out.println("finished");
  
@@ -472,7 +490,7 @@ public class RicOneApiTests
     	 }
     }
     //RETURN SINGLE SCHOOL
-    public static void XSchools_GetXSchool(XPress xPress)
+    public static void XSchools_GetXSchool(XPress xPress) // XXX School by School
     {
         if(xPress.getXSchool(refId).getData() != null)
         {
@@ -1296,7 +1314,7 @@ public class RicOneApiTests
         }
     }
     //RETURN ROSTERS BY LEA
-    public static void XRosters_GetXRostersByXLea(XPress xPress)
+    public static void XRosters_GetXRostersByXLea(XPress xPress) // XXX Roster by School
     {
     	if(xPress.getXRostersByXLea(refId).getData() != null)
     	{
@@ -1716,13 +1734,63 @@ public class RicOneApiTests
         }
     }
     //RETURN STAFFS BY LEA
-    public static void XStaffs_GetXStaffsByXLea(XPress xPress)
+    public static void XStaffs_GetXStaffsByXLea(XPress xPress) // XXX Staff by Lea
     {
     	if(xPress.getXStaffsByXLea(refId).getData() != null)
     	{
     		for(XStaffType s : xPress.getXStaffsByXLea(refId).getData())
             {
-            	System.out.println("refId: " + s.getRefId());
+//            	System.out.println("refId: " + s.getRefId());
+//                System.out.println("##### BEGIN NAME #####");
+//                System.out.println("type: " + s.getName().getType());
+//                System.out.println("prefix: " + s.getName().getPrefix());
+                System.out.println("familyName: " + s.getName().getFamilyName());
+                /*System.out.println("givenName: " + s.getName().getGivenName());
+                System.out.println("middleName: " + s.getName().getMiddleName());
+                System.out.println("suffix: " + s.getName().getSuffix());
+                System.out.println("##### END NAME #####");
+                System.out.println("localId: " + s.getLocalId());
+                System.out.println("stateProvinceId: " + s.getStateProvinceId());
+                System.out.println("##### BEGIN OTHERIDS #####");
+                for(XOtherPersonIdType id : s.getOtherIds().getOtherId())
+                {
+                    System.out.println("id: " + id.getId());
+                    System.out.println("type: " + id.getType());
+                }
+                System.out.println("##### END OTHERIDS #####");
+                System.out.println("sex: " + s.getSex());
+                System.out.println("##### BEGIN EMAIL #####");
+                System.out.println("emailType: " + s.getEmail().getEmailType());
+                System.out.println("emailAddress: " + s.getEmail().getEmailAddress());
+                System.out.println("##### END EMAIL #####");
+                System.out.println("##### BEGIN PRIMARYASSIGNMENT #####");*/
+                System.out.println("leaRefId: " + s.getPrimaryAssignment().getLeaRefId());
+                System.out.println("schoolRefId: " + s.getPrimaryAssignment().getSchoolRefId());
+                /*System.out.println("jobFunction: " + s.getPrimaryAssignment().getJobFunction());
+                System.out.println("##### END PRIMARYASSIGNMENT #####");
+                System.out.println("##### BEGIN OTHERASSIGNMENT #####");
+                for(XStaffPersonAssignmentType pa : s.getOtherAssignments().getStaffPersonAssignment())
+                {
+                    System.out.println("leaRefId: " + pa.getLeaRefId());
+                    System.out.println("schoolRefId: " + pa.getSchoolRefId());
+                    System.out.println("jobFunction: " + pa.getJobFunction());
+                }
+                System.out.println("##### END OTHERASSIGNMENT #####");
+                System.out.println("========================================");*/
+            }
+    	}
+    }
+    //RETURN STAFFS BY SCHOOL
+    
+    public static void XStaffs_GetXStaffsByXSchool(XPress xPress,String refId)
+    {
+    	if(xPress.getXStaffsByXSchool(refId).getData() != null)
+    	{
+    		for(XStaffType s : xPress.getXStaffsByXSchool(refId).getData())
+            {
+    			System.out.println("familyName: " + s.getName().getFamilyName());
+    			
+            	/*System.out.println("refId: " + s.getRefId());
                 System.out.println("##### BEGIN NAME #####");
                 System.out.println("type: " + s.getName().getType());
                 System.out.println("prefix: " + s.getName().getPrefix());
@@ -1758,13 +1826,12 @@ public class RicOneApiTests
                     System.out.println("jobFunction: " + pa.getJobFunction());
                 }
                 System.out.println("##### END OTHERASSIGNMENT #####");
-                System.out.println("========================================");
+                System.out.println("========================================");*/
             }
     	}
     }
-    //RETURN STAFFS BY SCHOOL
     
-    public static void XStaffs_GetXStaffsByXSchool(XPress xPress,String refId)
+    public static void XStaffs_GetXStaffsByXSchool(XPress xPress)
     {
     	if(xPress.getXStaffsByXSchool(refId).getData() != null)
     	{
@@ -1860,9 +1927,57 @@ public class RicOneApiTests
     	}
     }
     //RETURN STAFFS BY ROSTER
+    public static void XStaffs_GetXStaffsByXRoster(XPress xPress,String reid) // XXX Staff by Roster
+    {
+    	if(xPress.getXStaffsByXRoster(reid).getData() != null) 
+    	{
+    		for(XStaffType s : xPress.getXStaffsByXRoster(reid).getData())
+            {
+            	System.out.println("refId: " + s.getRefId());
+                System.out.println("##### BEGIN NAME #####");
+                System.out.println("type: " + s.getName().getType());
+                System.out.println("prefix: " + s.getName().getPrefix());
+                System.out.println("familyName: " + s.getName().getFamilyName());
+                System.out.println("givenName: " + s.getName().getGivenName());
+                System.out.println("middleName: " + s.getName().getMiddleName());
+                /*System.out.println("suffix: " + s.getName().getSuffix());
+                System.out.println("##### END NAME #####");
+                System.out.println("localId: " + s.getLocalId());
+                System.out.println("stateProvinceId: " + s.getStateProvinceId());
+                System.out.println("##### BEGIN OTHERIDS #####");
+                for(XOtherPersonIdType id : s.getOtherIds().getOtherId())
+                {
+                    System.out.println("id: " + id.getId());
+                    System.out.println("type: " + id.getType());
+                }
+                System.out.println("##### END OTHERIDS #####");
+                System.out.println("sex: " + s.getSex());
+                System.out.println("##### BEGIN EMAIL #####");
+                System.out.println("emailType: " + s.getEmail().getEmailType());
+                System.out.println("emailAddress: " + s.getEmail().getEmailAddress());
+                System.out.println("##### END EMAIL #####");
+                System.out.println("##### BEGIN PRIMARYASSIGNMENT #####");
+                System.out.println("leaRefId: " + s.getPrimaryAssignment().getLeaRefId());
+                System.out.println("schoolRefId: " + s.getPrimaryAssignment().getSchoolRefId());
+                System.out.println("jobFunction: " + s.getPrimaryAssignment().getJobFunction());
+                System.out.println("##### END PRIMARYASSIGNMENT #####");
+                System.out.println("##### BEGIN OTHERASSIGNMENT #####");
+                for(XStaffPersonAssignmentType pa : s.getOtherAssignments().getStaffPersonAssignment())
+                {
+                    System.out.println("leaRefId: " + pa.getLeaRefId());
+                    System.out.println("schoolRefId: " + pa.getSchoolRefId());
+                    System.out.println("jobFunction: " + pa.getJobFunction());
+                }
+                System.out.println("##### END OTHERASSIGNMENT #####");*/
+                System.out.println("========================================");
+            }
+    	} else {
+    		System.err.println("Data is null");
+    	}
+    }
     public static void XStaffs_GetXStaffsByXRoster(XPress xPress)
     {
-    	if(xPress.getXStaffsByXRoster(refId).getData() != null)
+    	if(xPress.getXStaffsByXRoster(refId).getData() != null) 
     	{
     		for(XStaffType s : xPress.getXStaffsByXRoster(refId).getData())
             {
@@ -1904,6 +2019,8 @@ public class RicOneApiTests
                 System.out.println("##### END OTHERASSIGNMENT #####");
                 System.out.println("========================================");
             }
+    	} else {
+    		System.err.println("Data is null");
     	}
     }
   //RETURN STAFFS BY ROSTER
@@ -2106,6 +2223,7 @@ public class RicOneApiTests
                 
                 for(XContactType c : s.getStudentContacts().getXContact())
                 {
+                	
                     System.out.println("##### BEGIN NAME #####");
                     System.out.println("type: " + c.getName().getType());
                     System.out.println("prefix: " + c.getName().getPrefix());
@@ -2927,7 +3045,7 @@ public class RicOneApiTests
     	}
     }
     //RETURN STUDENTS BY ROSTER
-    public static void XStudents_GetXStudentsByXRoster(XPress xPress)
+    public static void XStudents_GetXStudentsByXRoster(XPress xPress) // XXX Student by Roster
     {
     	if(xPress.getXStudentsByXRoster(refId).getData() != null)
     	{
