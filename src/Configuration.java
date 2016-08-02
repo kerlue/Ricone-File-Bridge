@@ -31,7 +31,9 @@ public abstract class Configuration {
 	 protected String authUrl;
 	 public JSONObject requiredJsonData;
 	 protected boolean enableLogging;
-	 protected String filter;
+	 protected String filter_by;
+	 protected String[] filter_refid;
+	 protected String[] filter_grades;
 
 	/**
 	 * @param args void.
@@ -145,9 +147,21 @@ public abstract class Configuration {
  	}
      
      
-     public String getFilterList() {
-  		return this.filter;
-  	}
+     public String getFilterBy() {
+   		return this.filter_by;
+   	}
+     
+     public String[] getFilterRefId() {
+   		return this.filter_refid;
+   	}
+     
+     public String[] getFilterGrades() {
+    	 if (this.filter_grades.length > 0) {
+    	   		return this.filter_grades;
+    	 } else {
+    		 return null;
+    	 }
+   	}
      
      /**
     	 * @param args void.

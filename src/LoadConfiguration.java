@@ -99,7 +99,9 @@ public class LoadConfiguration extends Configuration {
  	     providerId = getTextContent("provider_id");
  	     clientId = getTextContent("client_id");
  	     authUrl = getTextContent("auth_url");
- 	     filter = getFilterContent();
+ 	     filter_by = getTextContent("filter_by");
+ 	     filter_refid = getFilterContent("filter_refid");
+ 	     filter_grades = getFilterContent("filter_grades");
     	 
           if(!(outputSchema.matches("csv")|| 
         	   outputSchema.matches("xml")||
@@ -187,11 +189,11 @@ public class LoadConfiguration extends Configuration {
 		 
 	}
 	
-private String getFilterContent() {
+private String[] getFilterContent(String tagId) {
 		
 		try{
-			return (document.getElementsByTagName("filter").item(0)
-			.getTextContent().trim());
+			return (document.getElementsByTagName(tagId).item(0)
+			.getTextContent().trim().split(","));
 			
 		}catch(Exception e){
 					
