@@ -1,8 +1,8 @@
 /*////////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date Created: 7/14/2016
- * Version: 1.1.0
- * Updated: 7/26/2016
+ * Version: 1.2.0
+ * Updated: 8/3/2016
 */////////////////////////////////////////////////
 
 import java.lang.reflect.Method;

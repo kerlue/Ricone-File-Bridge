@@ -4,7 +4,7 @@ import java.util.ArrayList;
  * Created By: Shamus Cardon
  * Date Created: 7/15/2016
  * Version: 1.1.0
- * Updated: 7/25/2016
+ * Updated: 8/3/2016
 */////////////////////////////////////////////////
 
 public class DataType {
