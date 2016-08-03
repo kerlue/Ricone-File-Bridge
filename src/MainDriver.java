@@ -24,10 +24,17 @@ public class MainDriver {
 		System.out.println("---------------------------------Finished Loading Config file---------------------------------");
 		
 		
-		//TODO: Class to pull data from ric one api
+		// Class to pull data from ric one api
 		
-		DataReader d = new DataReader("Lea",new String[]{"15077B52-7D2A-4855-B41F-37FBA242522E"}, new String[]{"03","12"}); // first parameter should be Lea or School, second should be refid of that lea/school, and optional third param is the grade levels as a String[]
-		//DataReader d = new DataReader("School",new String[]{"25A10C7C-1BA5-4174-BA3F-1FA81849D076", "A5CA3C70-3254-489C-97F8-ED1A2D76FF33"}, new String[]{"3","4"}); // first parameter should be Lea or School, second should be refid of that lea/school, and optional third param is the grade levels as a String[]
+		///TODO Search by grade functionality not working - Courses do not have grade information populated in API. blocked from enabling searchbygrade until grades are populated
+		
+		
+		//Lea RefID - 15077B52-7D2A-4855-B41F-37FBA242522E
+		//School RefID - 25A10C7C-1BA5-4174-BA3F-1FA81849D076,A5CA3C70-3254-489C-97F8-ED1A2D76FF33
+		
+		DataReader d = new DataReader(config.getFilterBy(),config.getFilterRefId(),config.getFilterGrades()); // first parameter should be Lea or School, second should be refid of that lea/school, and optional third param is the grade levels as a String[]
+		
+		
 		
 		System.out.println("Authenticating........");
         Authenticator auth = new Authenticator(config.getAuthUrl(), config.getClientId(), config.getClientSecret());
@@ -36,11 +43,15 @@ public class MainDriver {
 		
 		System.out.println("Finshed Authenticating");
 		
+		long st_time = System.nanoTime();
+		
 		
 		ArrayList<Data> file_list = new ArrayList<Data>();
 		
-		//for (int i=0; i < config.getTextTitle().size(); ++i) { // TODO remove the commented section to do full file
-		for (int i=4; i < 5; ++i) { // TODO remove the commented section to do full file
+		int maxi = config.getTextTitle().size();
+//		int maxi = 2;
+		
+		for (int i=0; i < maxi; ++i) {
 			System.out.println("File " + (i+1) + " Started");
 			ArrayList<DataType> temp = new ArrayList<DataType>();
 			
@@ -49,26 +60,17 @@ public class MainDriver {
 			System.out.println("---------------------------------Finished Reading Data Requirements---------------------------------");
 			
 		    
-			Data data = d.ReadIn(auth,temp,config.getTextTitle().get(i));
+			Data data = d.ReadIn(auth,temp,config.getTextTitle().get(i),i,maxi,st_time);
 			file_list.add(data);
 			
-			System.out.println("File " + (i+1) + " Completed");
+			System.out.println((i+1) + " files completed in " + ((float)(System.nanoTime()-st_time))/1000000000 + "s");
 		}
-		
-		//TODO: Class to format data into required output schema 
-		
+
 		System.out.println("-------------------------------------Finished pulling Data------------------------------------");
-		
-		
-//		for (Data dat : file_list) {
-//			dat.Print();
-//		}
 		
 		ExportData ex_data = new ExportData(config, file_list);
 		
 		System.out.println("Completed!");
 		/**/
 	}
-	
-	
 }

@@ -25,7 +25,19 @@ public class DataReader {
     DataReader(String r_type, String[] rID, String[] grades) {
     	refid = rID;
     	ref_type = r_type;
-    	grade_nums = grades;
+    	boolean gr = false;
+    	if (grades.length>0) {
+    		for (String grade : grades) {
+    			if (grade.trim().length()>0) {
+    	    		grade_nums = grades;
+    	    		gr = true;
+    	    		break;
+    			}
+    		}
+    	} 
+    	if (!gr) {
+    		grade_nums = null;
+    	}
     }
     
     DataReader(String r_type, String[] rID) {
@@ -109,13 +121,15 @@ public class DataReader {
 		return t_list;
 	}
 	
-    public Data ReadIn(Authenticator auth, List<DataType> data_type_list, String file_name) { // xPressType should be "Lea","School","Student","Staff",etc.
+    public Data ReadIn(Authenticator auth, List<DataType> data_type_list, String file_name,int file_num, int num_files,long start_time) { // xPressType should be "Lea","School","Student","Staff",etc.
 		List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
 				
+		int num_endpoints = auth.getEndpoints().size();
+		int endpoint_num = 0;
 		for(Endpoint e : auth.getEndpoints()) {
 			//XPress xPress = new XPress(auth.getToken(), e.getHref());
 			XPress xPress = new XPress(auth.getToken(), "https://10.6.11.20/api/requests/");
-			list.addAll(DataRead(xPress,data_type_list));
+			list.addAll(DataRead(xPress,data_type_list,endpoint_num,num_endpoints,file_num,num_files,start_time));
 			//System.out.println(list);
 			//XLeas_GetXLeas(xPress);
 		}
@@ -123,7 +137,7 @@ public class DataReader {
 		return d;
     }
     
-    private <T> Object SpecialCase(String special_case, Class<T> clazz) {
+	private <T> Object SpecialCase(String special_case, Class<T> clazz) { // TODO make this method...
     	return null;
     }
     
@@ -454,9 +468,151 @@ public class DataReader {
 		
     	return null;    	
     }
+    
+    
+    private <T> boolean GradeCheck(String data_type, T var, XPress xPress) {
+    	if (grade_nums == null) {
+    		return true;
+    	}
+    	switch (data_type) {
+			case "Lea": {
+				break;
+			}
+			case "School": {
+				if (grade_nums != null) { // TODO Still need to test to make sure this grade matches correctly
+					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
+						for (String given_grade : ((XSchoolType) var).getGradeLevels().getGradeLevel()) {
+							if (desired_grade.equals(given_grade)) {
+								return true;
+							}
+						}
+					}
+				}
+				break;
+			}
+			case "Calendar": {
+				break;
+			}
+			case "Course": {
+					if (grade_nums != null) { // 
+						for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
+							for (String given_grade : ((XCourseType) var).getApplicableEducationLevels().getApplicableEducationLevel()) {
+								if (desired_grade.equals(given_grade)) {
+									return true;
+								}
+							}
+						}
+					}
+				break;
+			}
+			case "Roster": {
+				if (grade_nums != null) { // 
+					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
+						List<XCourseType> dat;
+							if ((dat = xPress.getXCoursesByXRoster(((XRosterType) var).getRefId()).getData()) != null) {
+								for (XCourseType temp : dat) { // get the course associated with the roster (needed to pull grade level information
+									for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
+										if (desired_grade.equals(given_grade)) {
+											return true;
+										}
+									}
+								}
+							}
+						} 
+				}
+				break;
+			}
+			case "Staff": {
+				if (grade_nums != null) { // 
+					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
+						List<XRosterType> dat;
+						if ((dat = xPress.getXRostersByXStaff(((XStaffType) var).getRefId()).getData()) != null) {    										
+							for (XRosterType roster : dat) {		
+								List<XCourseType> dat2;
+								if ((dat2 = xPress.getXCoursesByXRoster(roster.getRefId()).getData()) != null) {
+									for (XCourseType temp : dat2) { // get the course associated with the roster (needed to pull grade level information
+										for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
+											if (desired_grade.equals(given_grade)) {
+												return true;
+											}
+										}
+									}
+								}
+							} 
+						}
+					}
+				}
+				break;
+			}
+			case "Student": {
+				if (grade_nums != null) { // 
+					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
+							/*List<XRosterType> dat;
+							if ((dat = xPress.getXRostersByXStudent(var.getRefId()).getData()) != null) {
+								for (XRosterType roster : dat) {		
+									if (!grade_match) {
+										List<XCourseType> dat2;
+										if ((dat2=xPress.getXCoursesByXRoster(roster.getRefId()).getData()) != null) {
+										for (XCourseType temp : dat2) { // get the course associated with the roster (needed to pull grade level information
+											System.out.println(temp);
+											if (!grade_match) {
+												for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
+													System.out.println(given_grade);
+													if (desired_grade.equals(given_grade)) {
+														grade_match = true;
+														System.out.println("breaking");
+														break;
+													}
+												}
+											}
+										}
+										}
+									}
+								}
+							}*/
+								
+						String given_grade = ((XStudentType) var).getEnrollment().getGradeLevel();
+						if (desired_grade.equals(given_grade)) {
+							return true;
+						}
+					}
+				}
+				break;
+			}
+			case "Contact": {
+			if (grade_nums != null) { // 
+				for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
+					for (XStudentType student : xPress.getXStudentsByXContact(((XContactType) var).getRefId()).getData()) {										
+						for (XRosterType roster : xPress.getXRostersByXStudent(student.getRefId()).getData()) {		
+							for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
+								for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
+									if (desired_grade.equals(given_grade)) {
+										return true;											}
+										}
+									}
+								}
+							}
+						}
+					}
+				break;
+			}
+			default: {
+				System.err.println("hitting default case. thats a problem... Type is: " + data_type);
+				break;
+			}
+    	}
+    	return false;
+	}
    
     
-    public List<ArrayList<DataType>> DataRead(XPress xPress,List<DataType> data_highlevel_list) {
+    private void PrintPercent(int num, int size, int refid_size, int refid_num, int num_endpoints, int endpoint_num, int num_files, int file_num) {
+    	float per_complete = ((float)num*100/size/refid_size/num_endpoints/num_files+(float)refid_num*100/refid_size/num_endpoints/num_files+(float)endpoint_num*100/num_endpoints/num_files+(float)file_num*100/num_files);
+    	System.out.printf("File %s/%s Completed %.2f%% (total: %.2f%%).", file_num+1,num_files,((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete);
+		System.out.println();
+    }
+    
+    public List<ArrayList<DataType>> DataRead(XPress xPress,List<DataType> data_highlevel_list, int endpoint_num, int num_endpoints, int file_num, int num_files, long start_time) {
+    	long file_start_time = System.nanoTime();
     	int starting_num = 1;
     	List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
     	String data_type;
@@ -484,26 +640,22 @@ public class DataReader {
     					if (xPress.getXSchoolsByXLea(rid).getData() != null) {
     						int size = xPress.getXSchoolsByXLea(rid).getData().size();
     						int num = starting_num;
-	    					for (XSchoolType var : xPress.getXSchoolsByXLea(rid).getData()) { // loop through all schools in the district
-	    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-		    					System.out.println();
+    						for (XSchoolType var : xPress.getXSchoolsByXLea(rid).getData()) { // loop through all schools in the district
+    							
+    							 
+//    							float time_elapsed_so_far = ((float)(System.nanoTime()-file_start_time))/1000000000;
+//    							float percent_complete = ((float)num*100/size/refid_size+(float)refid_num*100/refid_size);
+//    							float estimated_time_remaining = time_elapsed_so_far/percent_complete; //  (((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)
+//								float total_time_for_this_specific_file = time_elapsed_so_far+estimated_time_remaining; // (((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size))
+//								float total_time_for_all_files = total_time_for_this_specific_file*(num_files-file_num+1)+estimated_time_remaining;
+//								
+								//((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)
+								
+								//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+								
+		    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 		    					++num;	 
-		    					boolean grade_match = false;
-	    						if (grade_nums != null) { // TODO Still need to test to make sure this grade matches correctly
-	    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-	    								if (!grade_match) {
-	    									for (String given_grade : var.getGradeLevels().getGradeLevel()) {
-	    										if (desired_grade.equals(given_grade)) {
-	    											grade_match = true;
-	    											System.out.println("breaking");
-	    											break;
-	    										}
-	    									}
-	    								}
-	    							}
-	    						} else {
-	    							grade_match = true;
-	    						}
+		    					boolean grade_match = GradeCheck(data_type,var,xPress);
 	    						if (grade_match) {
 	    	    					list.add(DRead(XSchoolType.class, commands, var, data_type));
 	    						} else {
@@ -517,8 +669,10 @@ public class DataReader {
     					int size = xPress.getXCalendarsByXLea(rid).getData().size();
 						int num = starting_num;
     					for (XCalendarType var : xPress.getXCalendarsByXLea(rid).getData()) { // loop through all calendars in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;
     						list.add(DRead(XCalendarType.class, commands, var, data_type));
     					}
@@ -527,26 +681,13 @@ public class DataReader {
     				case "Course": {
     					int size = xPress.getXCoursesByXLea(rid).getData().size();
 						int num = starting_num;
-    					for (XCourseType var : xPress.getXCoursesByXLea(rid).getData()) { // loop through all courses in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XCourseType var : xPress.getXCoursesByXLea(rid).getData()) { // loop through all courses in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;
-    						boolean grade_match = false;
-    						if (grade_nums != null) { // 
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									for (String given_grade : var.getApplicableEducationLevels().getApplicableEducationLevel()) {
-    										if (desired_grade.equals(given_grade)) {
-    											grade_match = true;
-    											System.out.println("breaking");
-    											break;
-    										}
-    									}
-    								}
-    							}
-    						} else {
-    							grade_match = true;
-    						}
+	    					boolean grade_match = GradeCheck(data_type,var,xPress);
     						if (grade_match) {
 
     	    					list.add(DRead(XCourseType.class, commands, var, data_type));
@@ -560,37 +701,15 @@ public class DataReader {
     					if (xPress.getXRostersByXLea(rid).getData() != null) {
     						int size = xPress.getXRostersByXLea(rid).getData().size();
     						int num = starting_num;
-	    					for (XRosterType var : xPress.getXRostersByXLea(rid).getData()) { // loop through all rosters in the district
+    						for (XRosterType var : xPress.getXRostersByXLea(rid).getData()) { // loop through all rosters in the district
+	    						 
 	    						if (num%5 == 0) {
-	    							System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-		    						System.out.println();
+	    							//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+									 
+			    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    						}
 	    						++num;	    						
-	        					boolean grade_match = false;
-	    						if (grade_nums != null) { // 
-	    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-	    								if (!grade_match) {
-	    									List<XCourseType> dat;
-	    									if ((dat = xPress.getXCoursesByXRoster(var.getRefId()).getData()) != null) {
-	    									for (XCourseType temp : dat) { // get the course associated with the roster (needed to pull grade level information
-	    										if (!grade_match) {
-	    											for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-	    												if (desired_grade.equals(given_grade)) {
-	    													grade_match = true;
-	    													System.out.println("breaking");
-	    													break;
-	    												}
-	    											}
-	    										}
-	    									}
-	    									}
-	    								}
-	    							}
-	    						} 
-	    						else {
-	    							grade_match = true;
-	    						}
-	    						
+	    						boolean grade_match = GradeCheck(data_type,var,xPress);
 	    						if (commands.get(0).get(1).contains("-and")) {
 	    							if (grade_match) {
 	    								if (commands.get(0).get(1).contains("-andSTAFF")) {
@@ -617,7 +736,7 @@ public class DataReader {
 	    											System.err.println("Header: " + xPress.getXStaffsByXRoster(var.getRefId()).getHeader());
 	    											System.err.println("StatusCode: " + xPress.getXStaffsByXRoster(var.getRefId()).getStatusCode());
 	    											System.err.println("Message: " + xPress.getXStaffsByXRoster(var.getRefId()).getMessage());
-	    											System.exit(1); // TODO Figure out what is causing these errors and fix
+	    											System.exit(1); // 
 	    										}
 	    									}
 	    								} else if (commands.get(0).get(1).contains("-andSTUDENT")) {
@@ -644,13 +763,15 @@ public class DataReader {
 	    											System.err.println("Header: " + xPress.getXStudentsByXRoster(var.getRefId()).getHeader());
 	    											System.err.println("StatusCode: " + xPress.getXStudentsByXRoster(var.getRefId()).getStatusCode());
 	    											System.err.println("Message: " + xPress.getXStudentsByXRoster(var.getRefId()).getMessage());
-	    											System.exit(1); // TODO Figure out what is causing these errors and fix
+	    											System.exit(1); // 
 	    										}
 	    									}
 	    								}
 	    							}
-	    						} else {    							
-	    	    					list.add(DRead(XRosterType.class, commands, var, data_type));
+	    						} else {    		
+	    							if (grade_match) {
+	    								list.add(DRead(XRosterType.class, commands, var, data_type));
+	    							}
 	    						}
 	    						
 	    					}
@@ -660,38 +781,14 @@ public class DataReader {
     				case "Staff": {
     					int size = xPress.getXStaffsByXLea(rid).getData().size();
 						int num = starting_num;
-    					for (XStaffType var : xPress.getXStaffsByXLea(rid).getData()) { // loop through all staffs in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XStaffType var : xPress.getXStaffsByXLea(rid).getData()) { // loop through all staffs in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;	 
-    						boolean grade_match = false;
-    						if (grade_nums != null) { // 
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									List<XRosterType> dat;
-    									if ((dat = xPress.getXRostersByXStaff(var.getRefId()).getData()) != null) {    										
-    									for (XRosterType roster : dat) {		
-    										if (!grade_match) {
-    											for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
-    												if (!grade_match) {
-    													for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-    														if (desired_grade.equals(given_grade)) {
-    															grade_match = true;
-    															System.out.println("breaking");
-    															break;
-    														}
-    													}
-    												}
-    											}
-    										}
-    									}
-    									} 
-    								}
-    							}
-    						} else {
-    							grade_match = true;
-    						}
-    						if (grade_match) {
+	    					boolean grade_match = GradeCheck(data_type,var,xPress);
+	    					if (grade_match) {
     	    					list.add(DRead(XStaffType.class, commands, var, data_type));
     						} else {
     							//System.out.println("here (no grade match"));
@@ -702,40 +799,14 @@ public class DataReader {
     				case "Student": {
     					int size = xPress.getXStudentsByXLea(rid).getData().size();
 						int num = starting_num;
-    					for (XStudentType var : xPress.getXStudentsByXLea(rid).getData()) { // loop through all students in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XStudentType var : xPress.getXStudentsByXLea(rid).getData()) { // loop through all students in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							if (num%5==0) {
+								PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+							}
 	    					++num;	
-    						boolean grade_match = false;
-    						if (grade_nums != null) { // 
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    								List<XRosterType> dat;
-									if ((dat = xPress.getXRostersByXStudent(var.getRefId()).getData()) != null) {
-    									for (XRosterType roster : dat) {		
-    										if (!grade_match) {
-    											List<XCourseType> dat2;
-    											if ((dat2=xPress.getXCoursesByXRoster(roster.getRefId()).getData()) != null) {
-    											for (XCourseType temp : dat2) { // get the course associated with the roster (needed to pull grade level information
-    												if (!grade_match) {
-    													for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-    														if (desired_grade.equals(given_grade)) {
-    															grade_match = true;
-    															System.out.println("breaking");
-    															break;
-    														}
-    													}
-    												}
-    											}
-    											}
-    										}
-    									}
-    								}
-    								}
-    							}
-    						} else {
-    							grade_match = true;
-    						}
+	    					boolean grade_match = GradeCheck(data_type,var,xPress);
     						if (grade_match) {
     	    					list.add(DRead(XStudentType.class, commands, var, data_type));
     						} else {
@@ -747,38 +818,13 @@ public class DataReader {
     				case "Contact": {
     					int size = xPress.getXContactsByXLea(rid).getData().size();
 						int num = starting_num;
-    					for (XContactType var : xPress.getXContactsByXLea(rid).getData()) { // loop through all contacts in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XContactType var : xPress.getXContactsByXLea(rid).getData()) { // loop through all contacts in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;
-    						boolean grade_match = false;
-    						if (grade_nums != null) { // 
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									for (XStudentType student : xPress.getXStudentsByXContact(var.getRefId()).getData()) {										
-    										if (!grade_match) {
-    											for (XRosterType roster : xPress.getXRostersByXStudent(student.getRefId()).getData()) {		
-    												if (!grade_match) {
-    													for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
-    														if (!grade_match) {
-    															for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-    																if (desired_grade.equals(given_grade)) {
-    																	grade_match = true;
-    																	System.out.println("breaking");
-    																	break;
-    																}
-    															}
-    														}
-    													}
-    												}
-    											}
-    										}
-    									}
-    								}
-    							}
-    						} else {
-    							grade_match = true;
-    						}
+	    					boolean grade_match = GradeCheck(data_type,var,xPress);
     						if (grade_match) {
     	    					list.add(DRead(XContactType.class, commands, var, data_type));
     						} else {
@@ -803,9 +849,11 @@ public class DataReader {
     				case "Lea": {
     					int size = xPress.getXLeasByXSchool(rid).getData().size();
 						int num = starting_num;
-    					for (XLeaType var : xPress.getXLeasByXSchool(rid).getData()) {
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XLeaType var : xPress.getXLeasByXSchool(rid).getData()) {
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;
     						list.add(DRead(XLeaType.class, commands, var, data_type));
     					}
@@ -813,22 +861,7 @@ public class DataReader {
     				}
     				case "School": {
     					XSchoolType var = xPress.getXSchool(rid).getData();
-    					boolean grade_match = false;
-    					if (grade_nums != null) { // 
-    						for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    							if (!grade_match) {
-    								for (String given_grade : var.getGradeLevels().getGradeLevel()) {
-    									if (desired_grade.equals(given_grade)) {
-    										grade_match = true;
-    										System.out.println("breaking");
-    										break;
-    									}
-    								}
-    							}
-    						}
-    					} else {
-    						grade_match = true;
-    					}
+    					boolean grade_match = GradeCheck(data_type,var,xPress);
     					if (grade_match) {
         					list.add(DRead(XSchoolType.class, commands, var, data_type));
     					} else {
@@ -839,9 +872,11 @@ public class DataReader {
     				case "Calendar": {
     					int size = xPress.getXCalendarsByXSchool(rid).getData().size();
 						int num = 0;
-    					for (XCalendarType var : xPress.getXCalendarsByXSchool(rid).getData()) { // loop through all calendars in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XCalendarType var : xPress.getXCalendarsByXSchool(rid).getData()) { // loop through all calendars in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;	
     						list.add(DRead(XCalendarType.class, commands, var, data_type));
     					}
@@ -850,26 +885,13 @@ public class DataReader {
     				case "Course": {
     					int size = xPress.getXCoursesByXSchool(rid).getData().size();
 						int num = starting_num;
-    					for (XCourseType var : xPress.getXCoursesByXSchool(rid).getData()) { // loop through all courses in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XCourseType var : xPress.getXCoursesByXSchool(rid).getData()) { // loop through all courses in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;
-    						boolean grade_match = false;
-    						if (grade_nums != null) { // 
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									for (String given_grade : var.getApplicableEducationLevels().getApplicableEducationLevel()) {
-    										if (desired_grade.equals(given_grade)) {
-    											grade_match = true;
-    											System.out.println("breaking");
-    											break;
-    										}
-    									}
-    								}
-    							}
-    						} else {
-    							grade_match = true;
-    						}
+	    					boolean grade_match = GradeCheck(data_type,var,xPress);
     						if (grade_match) {
     							list.add(DRead(XCourseType.class, commands, var, data_type));
     						} else {
@@ -882,37 +904,15 @@ public class DataReader {
     					if (xPress.getXRostersByXSchool(rid).getData() != null) {
     						int size = xPress.getXRostersByXSchool(rid).getData().size();
     						int num = starting_num;
-	    					for (XRosterType var : xPress.getXRostersByXSchool(rid).getData()) { // loop through all rosters in the school
-	    						if (num%5 == 0) {
-	    							System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-		    						System.out.println();
+    						for (XRosterType var : xPress.getXRostersByXSchool(rid).getData()) { // loop through all rosters in the school
+        						 
+        						if (num%5 == 0) {
+        							//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+    								 
+    		    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    						}
 	    						++num;	    						
-	        					boolean grade_match = false;
-	    						if (grade_nums != null) { // 
-	    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-	    								if (!grade_match) {
-	    									try {
-	    									for (XCourseType temp : xPress.getXCoursesByXRoster(var.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
-	    										if (!grade_match) {
-	    											for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-	    												if (desired_grade.equals(given_grade)) {
-	    													grade_match = true;
-	    													System.out.println("breaking");
-	    													break;
-	    												}
-	    											}
-	    										}
-	    									}
-	    									} catch (Exception e) {
-	    										e.printStackTrace();
-	    									}
-	    								}
-	    							}
-	    						} 
-	    						else {
-	    							grade_match = true;
-	    						}
+	    						boolean grade_match = GradeCheck(data_type,var,xPress);
 	    						
 	    						if (commands.get(0).get(1).contains("-and")) {
 	    							if (grade_match) {
@@ -940,7 +940,7 @@ public class DataReader {
 	    											System.err.println("Header: " + xPress.getXStaffsByXRoster(var.getRefId()).getHeader());
 	    											System.err.println("StatusCode: " + xPress.getXStaffsByXRoster(var.getRefId()).getStatusCode());
 	    											System.err.println("Message: " + xPress.getXStaffsByXRoster(var.getRefId()).getMessage());
-	    											System.exit(1); // TODO Figure out what is causing these errors and fix
+	    											System.exit(1); // 
 	    										}
 	    									}
 	    								} else if (commands.get(0).get(1).contains("-andSTUDENT")) {
@@ -967,7 +967,7 @@ public class DataReader {
 	    											System.err.println("Header: " + xPress.getXStudentsByXRoster(var.getRefId()).getHeader());
 	    											System.err.println("StatusCode: " + xPress.getXStudentsByXRoster(var.getRefId()).getStatusCode());
 	    											System.err.println("Message: " + xPress.getXStudentsByXRoster(var.getRefId()).getMessage());
-	    											System.exit(1); // TODO Figure out what is causing these errors and fix
+	    											System.exit(1); // 
 	    										}
 	    									}
 	    								}
@@ -983,45 +983,13 @@ public class DataReader {
     				case "Staff": {
     					int size = xPress.getXStaffsByXSchool(rid).getData().size();
 						int num = starting_num;
-    					for (XStaffType var : xPress.getXStaffsByXSchool(rid).getData()) { // loop through all staffs in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XStaffType var : xPress.getXStaffsByXSchool(rid).getData()) { // loop through all staffs in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;
-    						boolean grade_match = false;
-    						if (grade_nums != null) { //
-    							try {
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									if (xPress.getXRostersByXStaff(var.getRefId()).getData() != null) {
-	    									for (XRosterType roster : xPress.getXRostersByXStaff(var.getRefId()).getData()) {		
-	    										if (!grade_match) {
-	    											if (xPress.getXCoursesByXRoster(roster.getRefId()).getData() != null) {
-	    												if (xPress.getXCoursesByXRoster(roster.getRefId()).getData() != null) {
-			    											for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
-			    												if (!grade_match) {
-			    													for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-			    														if (desired_grade.equals(given_grade)) {
-			    															grade_match = true;
-			    															System.out.println("breaking");
-			    															break;
-			    														}
-			    													}
-			    												}
-			    											}
-	    												}
-	    											}
-	    										}
-	    									}
-    									}
-    								}
-    							}
-    							} catch (Exception e) {
-    								e.printStackTrace();
-    							}
-    							
-    						} else {
-    							grade_match = true;
-    						}
+	    					boolean grade_match = GradeCheck(data_type,var,xPress);
     						if (grade_match) {
     							list.add(DRead(XStaffType.class, commands, var, data_type));
     						} else {
@@ -1033,38 +1001,13 @@ public class DataReader {
     				case "Student": {
     					int size = xPress.getXStudentsByXSchool(rid).getData().size();
 						int num = starting_num;
-    					for (XStudentType var : xPress.getXStudentsByXSchool(rid).getData()) { // loop through all students in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XStudentType var : xPress.getXStudentsByXSchool(rid).getData()) { // loop through all students in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;
-    						boolean grade_match = false;
-    						if (grade_nums != null) { // 
-    							try {
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									for (XRosterType roster : xPress.getXRostersByXStudent(var.getRefId()).getData()) {		
-    										if (!grade_match) {
-    											for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
-    												if (!grade_match) {
-    													for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-    														if (desired_grade.equals(given_grade)) {
-    															grade_match = true;
-    															System.out.println("breaking");
-    															break;
-    														}
-    													}
-    												}
-    											}
-    										}
-    									}
-    								}
-    							}
-    							} catch (Exception e) {
-    								e.printStackTrace();
-    							}
-    						} else {
-    							grade_match = true;
-    						}
+	    					boolean grade_match = GradeCheck(data_type,var,xPress);
     						if (grade_match) {
     							list.add(DRead(XStudentType.class, commands, var, data_type));
     						} else {
@@ -1076,38 +1019,13 @@ public class DataReader {
     				case "Contact": {
     					int size = xPress.getXContactsByXSchool(rid).getData().size();
 						int num = starting_num;
-    					for (XContactType var : xPress.getXContactsByXSchool(rid).getData()) { // loop through all contacts in the district
-    						System.out.printf("Completed %.2f%%", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
-	    					System.out.println();
+						for (XContactType var : xPress.getXContactsByXSchool(rid).getData()) { // loop through all contacts in the district
+    						 
+    						//System.out.printf("Completed %.2f%% (total: %.2f%%). Estimated time remaining: %.3fs", ((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete,((((float)(System.nanoTime()-file_start_time))/1000000000)+((((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size)))*(num_files-file_num-1)+(((float)(System.nanoTime()-file_start_time))/1000000000)/((float)num*100/size/refid_size+(float)refid_num*100/refid_size));
+							 
+	    					 PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    					++num;
-    						boolean grade_match = false;
-    						if (grade_nums != null) { // 
-    							for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-    								if (!grade_match) {
-    									for (XStudentType student : xPress.getXStudentsByXContact(var.getRefId()).getData()) {										
-    										if (!grade_match) {
-    											for (XRosterType roster : xPress.getXRostersByXStudent(student.getRefId()).getData()) {		
-    												if (!grade_match) {
-    													for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
-    														if (!grade_match) {
-    															for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-    																if (desired_grade.equals(given_grade)) {
-    																	grade_match = true;
-    																	System.out.println("breaking");
-    																	break;
-    																}
-    															}
-    														}
-    													}
-    												}
-    											}
-    										}
-    									}
-    								}
-    							}
-    						} else {
-    							grade_match = true;
-    						}
+	    					boolean grade_match = GradeCheck(data_type,var,xPress);
     						if (grade_match) {
     							list.add(DRead(XContactType.class, commands, var, data_type));
     						} else {
