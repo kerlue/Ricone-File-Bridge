@@ -1,19 +1,13 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
+/*///////////////////////////////////////////////
+ * RICOne FileBridge
+ * Version: 1.4
+ * Updated: 8/3/2016
+*////////////////////////////////////////////////
 
+
+import java.util.ArrayList;
 import riconeapi.common.Authenticator;
 import riconeapi.common.Util;
-import riconeapi.common.XPress;
-import riconeapi.models.authentication.Endpoint;
-import riconeapi.models.xpress.XLeaType;
-import riconeapi.models.xpress.XOrganizationAddressType;
 
 public class MainDriver {
 	public static void main(String[] args){
@@ -36,7 +30,7 @@ public class MainDriver {
 		
 		System.out.println("-------------------------------------Finished pulling Data------------------------------------");
 		
-		ExportData ex_data = new ExportData(config, file_list);
+		ExportData.Export_Data(config, file_list);
 		
 		System.out.println("Completed!");
 		/**/

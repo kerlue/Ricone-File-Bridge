@@ -1,6 +1,6 @@
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
- * @version     1.0
+ * @version     1.4
  * @since       Jul 7, 2016
  * Filename		GlobalUtilities.java
  */
@@ -8,7 +8,6 @@
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;

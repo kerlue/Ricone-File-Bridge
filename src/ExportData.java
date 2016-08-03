@@ -1,21 +1,15 @@
 
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
- * @version     1.0
+ * @version     1.4
  * @since       Jul 7, 2016
  * Filename		ExportData.java
+ * Updated 8/3/16
  */
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-
-import org.json.JSONObject;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -24,39 +18,7 @@ import com.jcraft.jsch.Session;
 
 
 public class ExportData {
-/*
-	public ExportData(Configuration config, GetDataFromApiTest data) {
-		
-		File file = setupOutputPath(config);
-	 
-		switch(config.getOutputSchema()){
-		     case GlobalUtilities.CSV: 
-		    	 //new GenerateCsvFile(config,file,data);
-			 break;
-			 
-		     case GlobalUtilities.XML: 
-		    	 //TODO: create xml output
-			 break;
-			 
-		     case GlobalUtilities.JSON: 
-		    	 //TODO: create JSON output
-			 break;
-			 
-		 }
-	
-		
-		if(config.getOutputExport().matches(GlobalUtilities.SFTP)){
-			pushFileToSftpServer(file.getAbsolutePath(), config);
-		}
-		
-		else if (config.getOutputExport().matches(GlobalUtilities.LOCAL)
-				&& config.isZipEnabled() == true){
-			zipFileOnly(file.getAbsolutePath());
-		}
-		
-	}
-*/	
-	public ExportData(Configuration config, ArrayList<Data> data) {
+	public static void Export_Data(Configuration config, ArrayList<Data> data) {
 		
 		File file = setupOutputPath(config);
 	 
@@ -86,7 +48,7 @@ public class ExportData {
 		
 	}
 
-	private void zipFileOnly(String outputPath) {
+	private static void zipFileOnly(String outputPath) {
 		try {
 			FolderZiper.zipFolder(outputPath, outputPath+".zip");
 		} catch (Exception e) {
@@ -95,7 +57,7 @@ public class ExportData {
 		}
 	}
 
-	private void pushFileToSftpServer(String outputPath, Configuration config) {
+	private static void pushFileToSftpServer(String outputPath, Configuration config) {
 		if(FolderZiper.zipFolder(outputPath, outputPath+".zip")){
 			// folder zipped successfully 
 			sftpUploader(config.getOutputPath(), 
@@ -108,7 +70,7 @@ public class ExportData {
 		
 	}
 
-	private File setupOutputPath(Configuration config) {
+	private static File setupOutputPath(Configuration config) {
 
 				
 		String outputPath = "";

@@ -1,6 +1,6 @@
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
- * @version     1.0
+ * @version     1.4
  * @since       Jul 7, 2016
  * Filename		LoadConfiguration.java
  */
@@ -16,7 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList; 
 

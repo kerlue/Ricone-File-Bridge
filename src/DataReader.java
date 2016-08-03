@@ -1,7 +1,7 @@
 /*///////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date Created: 7/14/2016
- * Version: 1.2.0
+ * Version: 1.4
  * Updated: 8/3/2016
 *////////////////////////////////////////////////
 
@@ -161,17 +161,7 @@ public class DataReader {
     	
     	return full_list;
     }
-	
-	private static ArrayList<String> Split(String string_to_split) {
-		ArrayList<String> t_list = new ArrayList<String>();
-		String[] s = string_to_split.trim().split(",");
-		for (String i : s) {
-			System.out.println(i.trim());
-		}
-		
-		System.out.print("\n");
-		return t_list;
-	}
+
 	
     private static Data ReadIn(Authenticator auth, List<DataType> data_type_list, String file_name,int file_num, int num_files,long start_time) { // xPressType should be "Lea","School","Student","Staff",etc.
 		List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
@@ -180,6 +170,7 @@ public class DataReader {
 		int endpoint_num = 0;
 		for(Endpoint e : auth.getEndpoints()) {
 			//XPress xPress = new XPress(auth.getToken(), e.getHref());
+			System.out.println(e.getHref());
 			XPress xPress = new XPress(auth.getToken(), "https://10.6.11.20/api/requests/");
 			list.addAll(DataRead(xPress,data_type_list,endpoint_num,num_endpoints,file_num,num_files,start_time));
 			//System.out.println(list);
@@ -189,9 +180,9 @@ public class DataReader {
 		return d;
     }
     
-	private <T> Object SpecialCase(String special_case, Class<T> clazz) { // TODO make this method...
-    	return null;
-    }
+//	private <T> Object SpecialCase(String special_case, Class<T> clazz) { // TODO make this method...
+//    	return null;
+//    }
     
     @SuppressWarnings("unchecked")
 	private static <T> ArrayList<DataType> DRead(Class<T> clazz, ArrayList<ArrayList<String>> commands, T var, String data_type) {
@@ -388,7 +379,7 @@ public class DataReader {
     							t_str += m.invoke(t_obj);
     							++j;
 							} else if (t[j].equals("-student")) {
-								String str2 = (String)clazz2.getMethod("getRefId").invoke(var2); // XXX -student
+								String str2 = (String)clazz2.getMethod("getRefId").invoke(var2);
 								boolean found = false;
 								for (XPersonReferenceType st : (List<XPersonReferenceType>)XStudentReferenceListType.class.getMethod("getStudentReference").invoke(clazz.getMethod("getStudents").invoke(var))) {
 									if (str2.equals(st.getRefId())) {
@@ -532,7 +523,7 @@ public class DataReader {
 				break;
 			}
 			case "School": {
-				if (grade_nums != null) { // TODO Still need to test to make sure this grade matches correctly
+				if (grade_nums != null) {
 					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
 						for (String given_grade : ((XSchoolType) var).getGradeLevels().getGradeLevel()) {
 							if (desired_grade.equals(given_grade)) {

@@ -1,14 +1,13 @@
 
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
- * @version     1.0
+ * @version     1.4
  * @since       Jul 7, 2016
  * Filename		FolderZipper.java
  */
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -38,25 +37,21 @@ static public boolean zipFolder(String srcFolder, String destZipFile) {
   }
 
   static private boolean addFileToZip(String path, String srcFile, ZipOutputStream zip) throws Exception{
+	  File folder = new File(srcFile);
+	  if (folder.isDirectory()) {
+		  addFolderToZip(path, srcFile, zip);
+	  } else {
+		  byte[] buf = new byte[1024];
+		  int len;
+		  FileInputStream in = new FileInputStream(srcFile);
+		  zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
+		  while ((len = in.read(buf)) > 0) {
+			  zip.write(buf, 0, len);
+		  }
+		  in.close();
+	  }
 	  
-	  
-		  File folder = new File(srcFile);
-		    if (folder.isDirectory()) {
-		      addFolderToZip(path, srcFile, zip);
-		    } else {
-		      byte[] buf = new byte[1024];
-		      int len;
-		      FileInputStream in = new FileInputStream(srcFile);
-		      zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
-		      while ((len = in.read(buf)) > 0) {
-		        zip.write(buf, 0, len);
-		      }
-		    }
-	    
-	  
-	  return true;
-
-    
+	  return true;    
   }
 
   static private void addFolderToZip(String path, String srcFolder, ZipOutputStream zip)

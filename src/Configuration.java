@@ -2,11 +2,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
-import org.w3c.dom.Node;
 
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
- * @version     1.0
+ * @version     1.4
  * @since       Jul 7, 2016
  * Filename		Configuration.java
  */
