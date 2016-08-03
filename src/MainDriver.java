@@ -24,10 +24,6 @@ public class MainDriver {
 		System.out.println("---------------------------------Finished Loading Config file---------------------------------");
 		
 		
-		// Class to pull data from ric one api
-		
-		///TODO Search by grade functionality not working - Courses do not have grade information populated in API. blocked from enabling searchbygrade until grades are populated
-		
 		System.out.println("Authenticating........");
         Authenticator auth = new Authenticator(config.getAuthUrl(), config.getClientId(), config.getClientSecret());
         System.out.println("Finshed Authenticating");
