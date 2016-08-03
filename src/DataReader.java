@@ -1,9 +1,9 @@
-/*////////////////////////////////////////////////
+/*///////////////////////////////////////////////
  * Created By: Shamus Cardon
  * Date Created: 7/14/2016
  * Version: 1.2.0
  * Updated: 8/3/2016
-*/////////////////////////////////////////////////
+*////////////////////////////////////////////////
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -64,6 +64,15 @@ public class DataReader {
     }
     
     public static ArrayList<Data> GenerateFiles(Configuration config, Authenticator auth) {
+    	
+
+		
+		// Class to pull data from ric one api
+		
+		///TODO Search by grade functionality not working - Courses do not have grade information populated in API. blocked from enabling searchbygrade until grades are populated
+		
+    	
+    	
     	ArrayList<Data> file_list = new ArrayList<Data>();
     	
     	int maxi = config.getTextTitle().size();
