@@ -40,7 +40,6 @@ public class GenerateCsvFile{
 				}
 				writer.append('\n');
 				
-				System.out.println("fields " + fields);
 				writer.append('\n');
 				
 				

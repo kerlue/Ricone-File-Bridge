@@ -25,8 +25,6 @@ public class MainDriver {
         DataReader.PopulateDataReader(config.getFilterBy(),config.getFilterRefId(),config.getFilterGrades());
 		
         ArrayList<Data> file_list = DataReader.GenerateFiles(config,auth);
-        
-        System.out.println("file_list: " + file_list); 
 		
 		System.out.println("-------------------------------------Finished pulling Data------------------------------------");
 		

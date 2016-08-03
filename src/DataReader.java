@@ -168,9 +168,8 @@ public class DataReader {
 				
 		int num_endpoints = auth.getEndpoints().size();
 		int endpoint_num = 0;
-		for(Endpoint e : auth.getEndpoints()) {
+		for(@SuppressWarnings("unused") Endpoint e : auth.getEndpoints()) {
 			//XPress xPress = new XPress(auth.getToken(), e.getHref());
-			System.out.println(e.getHref());
 			XPress xPress = new XPress(auth.getToken(), "https://10.6.11.20/api/requests/");
 			list.addAll(DataRead(xPress,data_type_list,endpoint_num,num_endpoints,file_num,num_files,start_time));
 			//System.out.println(list);
