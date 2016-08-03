@@ -8,8 +8,6 @@
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import riconeapi.common.Authenticator;
 import riconeapi.common.XPress;
@@ -20,9 +18,13 @@ public class DataReader {
     private static String[] refid;   // Identifies the location the data is being pulled from
     private static String ref_type; // Should be either Lea or School
     private static String[] grade_nums; // optional param
+    private static long st_time;
+    private static boolean print_enabled = true;
     
     
-    DataReader(String r_type, String[] rID, String[] grades) {
+    public static void PopulateDataReader(String r_type, String[] rID, String[] grades) {
+    	st_time = System.nanoTime();
+		
     	refid = rID;
     	ref_type = r_type;
     	boolean gr = false;
@@ -40,13 +42,54 @@ public class DataReader {
     	}
     }
     
-    DataReader(String r_type, String[] rID) {
+    public static void PopulateDataReader(String r_type, String[] rID, String[] grades, boolean print_en) {
+    	st_time = System.nanoTime();
+		
     	refid = rID;
     	ref_type = r_type;
-    	grade_nums = null;
+    	boolean gr = false;
+    	if (grades.length>0) {
+    		for (String grade : grades) {
+    			if (grade.trim().length()>0) {
+    	    		grade_nums = grades;
+    	    		gr = true;
+    	    		break;
+    			}
+    		}
+    	} 
+    	if (!gr) {
+    		grade_nums = null;
+    	}
+    	print_enabled = print_en;
+    }
+    
+    public static ArrayList<Data> GenerateFiles(Configuration config, Authenticator auth) {
+    	ArrayList<Data> file_list = new ArrayList<Data>();
+    	
+    	int maxi = config.getTextTitle().size();
+//		int maxi = 2;
+		
+		for (int i=0; i < maxi; ++i) {
+			System.out.println("File " + (i+1) + " Started");
+			ArrayList<DataType> temp = new ArrayList<DataType>();
+			
+			temp = GetDataTypes(config.getColumnNames().get(i), config.getRequiredData().get(i));
+			
+			System.out.println("---------------------------------Finished Reading Data Requirements---------------------------------");
+			
+		    
+			Data data = ReadIn(auth,temp,config.getTextTitle().get(i),i,maxi,st_time);
+			file_list.add(data);
+			
+			System.out.println((i+1) + " files completed in " + ((float)(System.nanoTime()-st_time))/1000000000 + "s");
+		}
+
+    	
+    	
+    	return file_list;
     }
    
-    public ArrayList<DataType> GetDataTypes (String col_names, String req_data) {
+    private static ArrayList<DataType> GetDataTypes (String col_names, String req_data) {
     	ArrayList<DataType> full_list = new ArrayList<DataType>();
     	
     	String[] t_list1 = col_names.split(",");    	
@@ -110,7 +153,7 @@ public class DataReader {
     	return full_list;
     }
 	
-	public ArrayList<String> Split(String string_to_split) {
+	private static ArrayList<String> Split(String string_to_split) {
 		ArrayList<String> t_list = new ArrayList<String>();
 		String[] s = string_to_split.trim().split(",");
 		for (String i : s) {
@@ -121,7 +164,7 @@ public class DataReader {
 		return t_list;
 	}
 	
-    public Data ReadIn(Authenticator auth, List<DataType> data_type_list, String file_name,int file_num, int num_files,long start_time) { // xPressType should be "Lea","School","Student","Staff",etc.
+    private static Data ReadIn(Authenticator auth, List<DataType> data_type_list, String file_name,int file_num, int num_files,long start_time) { // xPressType should be "Lea","School","Student","Staff",etc.
 		List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
 				
 		int num_endpoints = auth.getEndpoints().size();
@@ -141,7 +184,8 @@ public class DataReader {
     	return null;
     }
     
-    private <T> ArrayList<DataType> DRead(Class<T> clazz, ArrayList<ArrayList<String>> commands, T var, String data_type) {
+    @SuppressWarnings("unchecked")
+	private static <T> ArrayList<DataType> DRead(Class<T> clazz, ArrayList<ArrayList<String>> commands, T var, String data_type) {
     	ArrayList<DataType> data_point = new ArrayList<DataType>();
     	for (ArrayList<String> com : commands) {
 			Method m;
@@ -216,7 +260,7 @@ public class DataReader {
     }
     
     @SuppressWarnings({ "unchecked" })
-	private <T,E> ArrayList<DataType> DRead(Class<T> clazz, Class<E> clazz2, ArrayList<ArrayList<String>> commands, T var, E var2, String data_type) {
+	private static <T,E> ArrayList<DataType> DRead(Class<T> clazz, Class<E> clazz2, ArrayList<ArrayList<String>> commands, T var, E var2, String data_type) {
     	ArrayList<DataType> data_point = new ArrayList<DataType>();
     	for (ArrayList<String> com : commands) {
 			Method m;
@@ -470,7 +514,7 @@ public class DataReader {
     }
     
     
-    private <T> boolean GradeCheck(String data_type, T var, XPress xPress) {
+    private static <T> boolean GradeCheck(String data_type, T var, XPress xPress) {
     	if (grade_nums == null) {
     		return true;
     	}
@@ -605,21 +649,20 @@ public class DataReader {
 	}
    
     
-    private void PrintPercent(int num, int size, int refid_size, int refid_num, int num_endpoints, int endpoint_num, int num_files, int file_num) {
-    	float per_complete = ((float)num*100/size/refid_size/num_endpoints/num_files+(float)refid_num*100/refid_size/num_endpoints/num_files+(float)endpoint_num*100/num_endpoints/num_files+(float)file_num*100/num_files);
-    	System.out.printf("File %s/%s Completed %.2f%% (total: %.2f%%).", file_num+1,num_files,((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete);
-		System.out.println();
+    private static void PrintPercent(int num, int size, int refid_size, int refid_num, int num_endpoints, int endpoint_num, int num_files, int file_num) {
+    	if (print_enabled) {
+    		float per_complete = ((float)num*100/size/refid_size/num_endpoints/num_files+(float)refid_num*100/refid_size/num_endpoints/num_files+(float)endpoint_num*100/num_endpoints/num_files+(float)file_num*100/num_files);
+	    	System.out.printf("File %s/%s Completed %.2f%% (total: %.2f%%).", file_num+1,num_files,((float)num*100/size/refid_size+(float)refid_num*100/refid_size),per_complete);
+			System.out.println();
+    	}
     }
     
-    public List<ArrayList<DataType>> DataRead(XPress xPress,List<DataType> data_highlevel_list, int endpoint_num, int num_endpoints, int file_num, int num_files, long start_time) {
-    	long file_start_time = System.nanoTime();
+    private static List<ArrayList<DataType>> DataRead(XPress xPress,List<DataType> data_highlevel_list, int endpoint_num, int num_endpoints, int file_num, int num_files, long start_time) {
     	int starting_num = 1;
     	List<ArrayList<DataType>> list = new ArrayList<ArrayList<DataType>>();
     	String data_type;
     	data_type = data_highlevel_list.get(0).getDataCategory();
 
-    	
-    	
     	ArrayList<ArrayList<String>> commands = new ArrayList<ArrayList<String>>();
     	for (DataType d : data_highlevel_list) {
     		commands.add(d.getCommandArray());

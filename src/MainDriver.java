@@ -28,44 +28,16 @@ public class MainDriver {
 		
 		///TODO Search by grade functionality not working - Courses do not have grade information populated in API. blocked from enabling searchbygrade until grades are populated
 		
-		
-		//Lea RefID - 15077B52-7D2A-4855-B41F-37FBA242522E
-		//School RefID - 25A10C7C-1BA5-4174-BA3F-1FA81849D076,A5CA3C70-3254-489C-97F8-ED1A2D76FF33
-		
-		DataReader d = new DataReader(config.getFilterBy(),config.getFilterRefId(),config.getFilterGrades()); // first parameter should be Lea or School, second should be refid of that lea/school, and optional third param is the grade levels as a String[]
-		
-		
-		
 		System.out.println("Authenticating........");
         Authenticator auth = new Authenticator(config.getAuthUrl(), config.getClientId(), config.getClientSecret());
+        System.out.println("Finshed Authenticating");
+		
+        DataReader.PopulateDataReader(config.getFilterBy(),config.getFilterRefId(),config.getFilterGrades(),false);
+		
+        ArrayList<Data> file_list = DataReader.GenerateFiles(config,auth);
         
-		//GetDataFromApiTest dat = new GetDataFromApiTest(config);
+        System.out.println("file_list: " + file_list); 
 		
-		System.out.println("Finshed Authenticating");
-		
-		long st_time = System.nanoTime();
-		
-		
-		ArrayList<Data> file_list = new ArrayList<Data>();
-		
-		int maxi = config.getTextTitle().size();
-//		int maxi = 2;
-		
-		for (int i=0; i < maxi; ++i) {
-			System.out.println("File " + (i+1) + " Started");
-			ArrayList<DataType> temp = new ArrayList<DataType>();
-			
-			temp = d.GetDataTypes(config.getColumnNames().get(i), config.getRequiredData().get(i));
-			
-			System.out.println("---------------------------------Finished Reading Data Requirements---------------------------------");
-			
-		    
-			Data data = d.ReadIn(auth,temp,config.getTextTitle().get(i),i,maxi,st_time);
-			file_list.add(data);
-			
-			System.out.println((i+1) + " files completed in " + ((float)(System.nanoTime()-st_time))/1000000000 + "s");
-		}
-
 		System.out.println("-------------------------------------Finished pulling Data------------------------------------");
 		
 		ExportData ex_data = new ExportData(config, file_list);
