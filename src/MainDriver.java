@@ -22,7 +22,7 @@ public class MainDriver {
         Authenticator auth = new Authenticator(config.getAuthUrl(), config.getClientId(), config.getClientSecret());
         System.out.println("Finshed Authenticating");
 		
-        DataReader.PopulateDataReader(config.getFilterBy(),config.getFilterRefId(),config.getFilterGrades(),false);
+        DataReader.PopulateDataReader(config.getFilterBy(),config.getFilterRefId(),config.getFilterGrades());
 		
         ArrayList<Data> file_list = DataReader.GenerateFiles(config,auth);
         
