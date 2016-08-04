@@ -1,6 +1,6 @@
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
- * @version     1.4
+ * @version     1.0
  * @since       Jul 7, 2016
  * Filename		LoadConfiguration.java
  */
@@ -16,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList; 
 
@@ -98,9 +99,10 @@ public class LoadConfiguration extends Configuration {
  	     providerId = getTextContent("provider_id");
  	     clientId = getTextContent("client_id");
  	     authUrl = getTextContent("auth_url");
- 	     filter_by = getTextContent("filter_by");
- 	     filter_refid = getFilterContent("filter_refid");
- 	     filter_grades = getFilterContent("filter_grades");
+ 	     filterBy = getTextContent("filter_by");
+ 	     filterRefid = getFilterContent("filter_refid");
+ 	     filterGrades = getFilterContent("filter_grades");
+ 	     textMode = getTextContent("text_mode").contains("true");
     	 
           if(!(outputSchema.matches("csv")|| 
         	   outputSchema.matches("xml")||

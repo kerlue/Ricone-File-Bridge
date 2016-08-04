@@ -1,11 +1,13 @@
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
+import org.w3c.dom.Node;
 
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
- * @version     1.4
+ * @version     1.0
  * @since       Jul 7, 2016
  * Filename		Configuration.java
  */
@@ -30,9 +32,10 @@ public abstract class Configuration {
 	 protected String authUrl;
 	 public JSONObject requiredJsonData;
 	 protected boolean enableLogging;
-	 protected String filter_by;
-	 protected String[] filter_refid;
-	 protected String[] filter_grades;
+	 protected boolean textMode;
+	 protected String filterBy;
+	 protected String[] filterRefid;
+	 protected String[] filterGrades;
 
 	/**
 	 * @param args void.
@@ -147,16 +150,16 @@ public abstract class Configuration {
      
      
      public String getFilterBy() {
-   		return this.filter_by;
+   		return this.filterBy;
    	}
      
      public String[] getFilterRefId() {
-   		return this.filter_refid;
+   		return this.filterRefid;
    	}
      
      public String[] getFilterGrades() {
-    	 if (this.filter_grades.length > 0) {
-    	   		return this.filter_grades;
+    	 if (this.filterGrades.length > 0) {
+    	   		return this.filterGrades;
     	 } else {
     		 return null;
     	 }
@@ -232,6 +235,11 @@ public abstract class Configuration {
 	public boolean isLoggingEnabled() {
 		
 		return enableLogging;
+	}
+
+	public String getExtension() {
+	   if(textMode)return ".txt";
+		return "."+this.getOutputSchema();
 	}
       
      

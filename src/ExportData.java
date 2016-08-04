@@ -1,15 +1,21 @@
 
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
- * @version     1.4
+ * @version     1.0
  * @since       Jul 7, 2016
  * Filename		ExportData.java
- * Updated 8/3/16
  */
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+
+import org.json.JSONObject;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -18,13 +24,14 @@ import com.jcraft.jsch.Session;
 
 
 public class ExportData {
-	public static void Export_Data(Configuration config, ArrayList<Data> data) {
+/*
+	public ExportData(Configuration config, GetDataFromApiTest data) {
 		
 		File file = setupOutputPath(config);
 	 
 		switch(config.getOutputSchema()){
 		     case GlobalUtilities.CSV: 
-		    	 new GenerateCsvFile(file,data,config);
+		    	 //new GenerateCsvFile(config,file,data);
 			 break;
 			 
 		     case GlobalUtilities.XML: 
@@ -33,6 +40,37 @@ public class ExportData {
 			 
 		     case GlobalUtilities.JSON: 
 		    	 //TODO: create JSON output
+			 break;
+			 
+		 }
+	
+		
+		if(config.getOutputExport().matches(GlobalUtilities.SFTP)){
+			pushFileToSftpServer(file.getAbsolutePath(), config);
+		}
+		
+		else if (config.getOutputExport().matches(GlobalUtilities.LOCAL)
+				&& config.isZipEnabled() == true){
+			zipFileOnly(file.getAbsolutePath());
+		}
+		
+	}
+*/	
+	public ExportData(Configuration config, ArrayList<Data> data) {
+		
+		File file = setupOutputPath(config);
+	 
+		switch(GlobalUtilities.JSON){
+		     case GlobalUtilities.CSV: 
+		    	 new GenerateCsvFile(file,data,config);
+			 break;
+			 
+		     case GlobalUtilities.XML: 
+		    	 new GenerateXmlFile(file,data,config);
+			 break;
+			 
+		     case GlobalUtilities.JSON: 
+		    	 new GenerateJSONFile(file,data,config);
 			 break;
 			 
 		 }
@@ -48,7 +86,7 @@ public class ExportData {
 		
 	}
 
-	private static void zipFileOnly(String outputPath) {
+	private void zipFileOnly(String outputPath) {
 		try {
 			FolderZiper.zipFolder(outputPath, outputPath+".zip");
 		} catch (Exception e) {
@@ -57,7 +95,7 @@ public class ExportData {
 		}
 	}
 
-	private static void pushFileToSftpServer(String outputPath, Configuration config) {
+	private void pushFileToSftpServer(String outputPath, Configuration config) {
 		if(FolderZiper.zipFolder(outputPath, outputPath+".zip")){
 			// folder zipped successfully 
 			sftpUploader(config.getOutputPath(), 
@@ -70,7 +108,7 @@ public class ExportData {
 		
 	}
 
-	private static File setupOutputPath(Configuration config) {
+	private File setupOutputPath(Configuration config) {
 
 				
 		String outputPath = "";
@@ -85,24 +123,21 @@ public class ExportData {
 		
 		File file = new File(outputPath+outputFolderTitle);
 		
-		
-		
-		if(file.exists()){
-			deleteDirectory(file);
-			
+		while(file.exists()){
+			System.out.println(""+file.toString());
+			System.out.print(deleteDirectory(file)+"--->");
 		}
 		
 		if (!file.mkdirs()) {
 			GlobalUtilities.logError("Failed to create folder");
 			System.exit(1);
+			
 			return null; 
 			
 		}
  
 		GlobalUtilities.logInfo(file.getAbsolutePath()+" created sucessfully ");
 		return file;
-		
-			
 		
 	}
 	
