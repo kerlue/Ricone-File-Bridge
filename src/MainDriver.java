@@ -28,7 +28,7 @@ public class MainDriver {
 		
 		System.out.println("-------------------------------------Finished pulling Data------------------------------------");
 		
-		ExportData.Export_Data(config, file_list);
+		new ExportData(config, file_list);
 		
 		System.out.println("Completed!");
 		/**/
