@@ -15,7 +15,7 @@
         <!--output destination-->
         <output_export>local</output_export>
         <!--Enter output destination (local or SFTP)-->
-        <output_path>C:\Users\DMCINNIS\Desktop</output_path>
+        <output_path>/Users/training/Desktop</output_path>
         <!--Enter output destination path (ex: C:\Users\Desktop , sftp.pifdata.net )-->
         <output_folder_title>SCHOOL DATA</output_folder_title>
         <!--Enter output folder title (ex: Districts )-->
@@ -50,11 +50,11 @@
      <required_data>    
         <CODE_DISTRICT column_name = "district_code,district_name,address_1,address_2,city,state,zip">xLea RefId, LeaName, Address Line1, Address Line2, Address City, Address StateProvince, Address PostalCode</CODE_DISTRICT>
         <SCHOOL column_name = "school_code,school_name,district_code,address_1,address_2,city,state,zip">xSchool RefId, SchoolName, LeaRefId, Address Line1, Address Line2, Address City, Address StateProvince, Address PostalCode</SCHOOL>
-        <!--  <PIF_SCTION column_name = "native_section_code,school_code,date_start,date_end,school_year,section_name,section_number">xRoster RefId,  SchoolRefId, SchoolYear, SchoolYear, SchoolYear, CourseTitle, SchoolSectionId</PIF_SCTION>
+        <PIF_SECTION column_name = "native_section_code,school_code,date_start,date_end,school_year,section_name,section_number">xRoster RefId,  SchoolRefId, SchoolYear, SchoolYear, SchoolYear, CourseTitle, SchoolSectionId</PIF_SECTION>
         <STAFF column_name = "staff_code,last_name,first_name,middle_name,email,title,staff_number,username,password">xStaff RefId, Name FamilyName, Name GivenName, Name MiddleName, Email EmailAddress, Name Prefix,LocalId, Email EmailAddress, RefId</STAFF>
         <STUDENT column_name = "student_code,last_name,first_name,middle_name,email,student_number,username,password,REMOVETHIS-Grade">xStudent RefId, Name FamilyName, Name GivenName, Name MiddleName, Email EmailAddress, LocalId,Email EmailAddress,RefId,Enrollment GradeLevel</STUDENT>
         <PIF_SECTION_STAFF column_name = "section_teacher_code,staff_code,native_section_code,date_start,date_end,school_year,teacher_of_record">xRoster -andSTAFF SectionRefId StaffPersonReference RefId, StaffPersonReference RefId, SectionRefId,SchoolYear,SchoolYear,SchoolYear, -g -staff -g isTeacherOfRecord</PIF_SECTION_STAFF>       
          <PIF_SECTION_STUDENT column_name = "section_student_code,student_code,native_section_code,date_start,date_end,school_year">xRoster -andSTUDENT SectionRefId -g -student RefId, -g -student RefId,RefId, SchoolYear, SchoolYear,SchoolYear</PIF_SECTION_STUDENT>     
-    --></required_data>
+    </required_data>
     
 </configSettings>

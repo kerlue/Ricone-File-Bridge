@@ -60,16 +60,19 @@ public class ExportData {
 		
 		File file = setupOutputPath(config);
 	 
-		switch(GlobalUtilities.JSON){
+		switch(config.getOutputSchema()){
 		     case GlobalUtilities.CSV: 
+		    	 System.out.println("CSV");
 		    	 new GenerateCsvFile(file,data,config);
 			 break;
 			 
 		     case GlobalUtilities.XML: 
+		    	 System.out.println("XML");
 		    	 new GenerateXmlFile(file,data,config);
 			 break;
 			 
 		     case GlobalUtilities.JSON: 
+		    	 System.out.println("JSON");
 		    	 new GenerateJSONFile(file,data,config);
 			 break;
 			 
