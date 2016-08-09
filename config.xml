@@ -37,15 +37,15 @@
         <client_id>RICOneFileBridge</client_id>
         <provider_id>test </provider_id>
         <navigation_page_size> test </navigation_page_size>
-        <client_secret></client_secret>
+        <client_secret>redacted</client_secret>
     </authentication_settings>
     
     <!--Required data to search for. The tag represents text file name. -->
     <!-- column_name represents the name for each column. -->
     
-     <filter><filter_by>Lea</filter_by>
-      <filter_refid>15077B52-7D2A-4855-B41F-37FBA242522E</filter_refid>
-      <filter_grades></filter_grades></filter>
+     <filter><filter_by>School</filter_by>
+      <filter_refid>0E4E12EC-E5C5-455F-BE7C-ACC3E78A2F42,25A10C7C-1BA5-4174-BA3F-1FA81849D076,39021BEF-DD1D-4C3F-959B-77F3DD45F6DF,3BE15FFD-977A-46DD-B719-1ABB4D561FA3,572CA955-789F-4EDC-B47D-FE907CA23FA3,8672D374-135B-4A1C-9964-4B15E6E47ABA,8BEF9874-983E-4D9C-AA1C-629A5AF58F17,98684F85-E745-47A8-A004-A1B274B8BEF6,A5CA3C70-3254-489C-97F8-ED1A2D76FF33,B33888A6-E12E-4CDC-A45E-90E965507159,C67BB1F6-27B8-4AD6-8825-FCFBB401AA2F,C821F285-965A-49FE-A85A-A50BBEDE9CE8,CA662096-C412-4DA4-9011-968011E05FAA,DE6C6235-A48C-42B8-A05F-22A917B36F41,E4BB5BB0-5BCE-43EB-B049-98A6752A9C49,F56ACBA6-0DE6-4A55-9C80-7D4F2AC767A5,FDE56567-1221-48A7-BFF5-8F9C80F68996</filter_refid>
+      <filter_grades>2,3,4,6;1,4,8;1,2,3;;2,4;;5,10;;11,12;12;7;3,6;;;2,3,6;;4</filter_grades></filter>
         
      <required_data>    
         <CODE_DISTRICT column_name = "district_code,district_name,address_1,address_2,city,state,zip">xLea RefId, LeaName, Address Line1, Address Line2, Address City, Address StateProvince, Address PostalCode</CODE_DISTRICT>
@@ -53,8 +53,8 @@
         <PIF_SECTION column_name = "native_section_code,school_code,date_start,date_end,school_year,section_name,section_number">xRoster RefId,  SchoolRefId, SchoolYear, SchoolYear, SchoolYear, CourseTitle, SchoolSectionId</PIF_SECTION>
         <STAFF column_name = "staff_code,last_name,first_name,middle_name,email,title,staff_number,username,password">xStaff RefId, Name FamilyName, Name GivenName, Name MiddleName, Email EmailAddress, Name Prefix,LocalId, Email EmailAddress, RefId</STAFF>
         <STUDENT column_name = "student_code,last_name,first_name,middle_name,email,student_number,username,password,REMOVETHIS-Grade">xStudent RefId, Name FamilyName, Name GivenName, Name MiddleName, Email EmailAddress, LocalId,Email EmailAddress,RefId,Enrollment GradeLevel</STUDENT>
-        <PIF_SECTION_STAFF column_name = "section_teacher_code,staff_code,native_section_code,date_start,date_end,school_year,teacher_of_record">xRoster -andSTAFF SectionRefId StaffPersonReference RefId, StaffPersonReference RefId, SectionRefId,SchoolYear,SchoolYear,SchoolYear, -g -staff -g isTeacherOfRecord</PIF_SECTION_STAFF>       
-         <PIF_SECTION_STUDENT column_name = "section_student_code,student_code,native_section_code,date_start,date_end,school_year">xRoster -andSTUDENT SectionRefId -g -student RefId, -g -student RefId,RefId, SchoolYear, SchoolYear,SchoolYear</PIF_SECTION_STUDENT>     
+        <PIF_SECTION_STAFF column_name = "section_teacher_code,staff_code,native_section_code,date_start,date_end,school_year,teacher_of_record">xRoster -andSTAFF SectionRefId -and -g -staff StaffPersonReference RefId, -g -staff StaffPersonReference RefId, SectionRefId,SchoolYear,SchoolYear,SchoolYear, -g -staff -g isTeacherOfRecord</PIF_SECTION_STAFF>       
+         <PIF_SECTION_STUDENT column_name = "section_student_code,student_code,native_section_code,date_start,date_end,school_year">xRoster -andSTUDENT SectionRefId -and Students StudentReference RefId, Students StudentReference RefId,RefId, SchoolYear, SchoolYear,SchoolYear</PIF_SECTION_STUDENT>     
     </required_data>
     
 </configSettings>
