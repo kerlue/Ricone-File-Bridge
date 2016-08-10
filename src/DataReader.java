@@ -2,7 +2,7 @@
  * Created By: Shamus Cardon
  * Date Created: 7/14/2016
  * Version: 1.4.1
- * Updated: 8/3/2016
+ * Updated: 8/10/2016
 *////////////////////////////////////////////////
 
 import java.lang.reflect.Method;
@@ -10,57 +10,62 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import riconeapi.common.Authenticator;
 import riconeapi.common.XPress;
 import riconeapi.models.authentication.Endpoint;
 import riconeapi.models.xpress.*;
 
 public class DataReader {
-    private static String[] refid;   // Identifies the location the data is being pulled from
+   // private static String[] refid;   // Identifies the location the data is being pulled from
     private static String ref_type; // Should be either Lea or School
-    private static String[] grade_nums; // optional param
+   // private static String[][] grade_nums; // optional param
+    private static TreeMap<String,String[]> grade_assoc;
     private static long st_time;
     private static boolean print_enabled = true;
     
     
-    public static void PopulateDataReader(String r_type, String[] rID, String[] grades) {
+    public static void PopulateDataReader(String r_type, String[] rID, String[][] grades, Authenticator auth) {
     	st_time = System.nanoTime();
 		
-    	refid = rID;
     	ref_type = r_type;
-    	boolean gr = false;
+
+    	grade_assoc = new TreeMap<String,String[]>();
+    	
+		XPress xPress = new XPress(auth.getToken(), "https://10.6.11.20/api/requests/");
+		
     	if (grades.length>0) {
-    		for (String grade : grades) {
-    			if (grade.trim().length()>0) {
-    	    		grade_nums = grades;
-    	    		gr = true;
-    	    		break;
+    		for (int i=0; i < grades.length; ++i) {
+    			boolean found = false;
+    			XSchoolType school;
+    			if ((school = xPress.getXSchool(rID[i]).getData()) != null) {
+    				for (String grade : grades[i]) {
+    	    			if (grade.trim().length()>0) {
+    	    				found = true;
+    	    				if (GradeChecker.GradeCheck("School",school,xPress,grades[i])) {
+    		    	    		grade_assoc.put(rID[i], grades[i]);
+    	    				}
+    	    	    		break;
+    	    			}
+        			}
+    			}
+    			if (!found) {
+//    				System.out.println(i);
+//    				System.out.println(rID[i]);
+//    				System.out.println("after");
+//    				String[] t = new String[] {"2","3"};
+//    				for (String s : t) {
+//    					System.out.println("s " + s);
+//    				}
+    				grade_assoc.put(rID[i],null);
     			}
     		}
-    	} 
-    	if (!gr) {
-    		grade_nums = null;
     	}
     }
     
-    public static void PopulateDataReader(String r_type, String[] rID, String[] grades, boolean print_en) {
-    	st_time = System.nanoTime();
-		
-    	refid = rID;
-    	ref_type = r_type;
-    	boolean gr = false;
-    	if (grades.length>0) {
-    		for (String grade : grades) {
-    			if (grade.trim().length()>0) {
-    	    		grade_nums = grades;
-    	    		gr = true;
-    	    		break;
-    			}
-    		}
-    	} 
-    	if (!gr) {
-    		grade_nums = null;
-    	}
+    public static void PopulateDataReader(String r_type, String[] rID, String[][] grades, Authenticator auth, boolean print_en) {
+    	PopulateDataReader(r_type,rID,grades,auth);
     	print_enabled = print_en;
     }
     
@@ -72,12 +77,12 @@ public class DataReader {
 		
 		///TODO Search by grade functionality not working - Courses do not have grade information populated in API. blocked from enabling searchbygrade until grades are populated
 		
-    	
-    	
+    	PopulateDataReader(config.getFilterBy(),config.getFilterRefId(),config.getFilterGrades(),auth);
+		
     	ArrayList<Data> file_list = new ArrayList<Data>();
     	
     	int maxi = config.getTextTitle().size();
-//		int maxi = 2;
+		//int maxi = 2;
 		
 		for (int i=0; i < maxi; ++i) {
 			System.out.println("File " + (i+1) + " Started");
@@ -119,9 +124,7 @@ public class DataReader {
 			if (st[j].equals("-g") && j < st.length-1) {
 				++j;
 				temp += st[j] + " ";
-			} else if (st[j].equals("-andSTAFF")) {
-				temp += st[j] + " ";				
-			} else if (st[j].equals("-andSTUDENT")) {
+			} else if (st[j].contains("-and")) {
 				temp += st[j] + " ";				
 			} else {
 				temp += "get" + st[j] + " ";					
@@ -146,9 +149,7 @@ public class DataReader {
     				if (st[j].equals("-g") && j < st.length-1) {
     					++j;
     					temp += st[j] + " ";
-    				} else if (st[j].equals("-andSTAFF")) {
-    					temp += st[j] + " ";				
-    				} else if (st[j].equals("-andSTUDENT")) {
+    				} else if (st[j].contains("-and")) {
     					temp += st[j] + " ";				
     				} else {
     					temp += "get" + st[j] + " ";					
@@ -180,6 +181,16 @@ public class DataReader {
 		return d;
     }
 
+    private static <T> Object SimpleCase(Class<T> classofmethod, String m_name, T var) {
+    	Method m;
+    	try {
+			m = classofmethod.getMethod(m_name);							  	    							
+			return m.invoke(var);
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	return null;
+    }
     
     private static <T,E> Object SimpleCase(Class<T> classofmethod, Class<E> classofvar, String high_name, String low_name, E var) {
     	Method m;
@@ -202,40 +213,58 @@ public class DataReader {
     	return SpecialCaseMain(t,start_index,clazz,var,clazz2,var2,data_type);
     }
     
+    private static void null_case(String[] t) {
+//    	for (String s : t) {
+//    		System.out.print(s + " ");
+//    	}
+//    	System.out.println("\n\nnull_case\n\n");
+//    	new Exception().printStackTrace();
+//    	System.exit(1);
+    }
     
-	private static <T,E> Object SpecialCaseMain(String[] t,int i, Class<T> clazz, T var, Class<E> clazz2, E var2, String data_type) { // TODO make this method...
+    
+	@SuppressWarnings("unchecked")
+	private static <T,E> Object SpecialCaseMain(String[] t,int i, Class<T> clazz, T var, Class<E> clazz2, E var2, String data_type) {
 		//for (int i=0; i < t.length; ++i) {
-		if (t.length <= i+1) {
+		if (t.length < i+1) {
 			System.err.println("t is not large enough for that start index. t.length=" + t.length + " start_index=" + i);
+			new Exception().printStackTrace();
 			return null;
 		}
 			Method m;
 			try {
-				switch (data_type) {
+				switch (data_type) { 
 					case "Lea": {
 						if (t[i].equals("getAddress")) {
 							Object temp = SimpleCase(XOrganizationAddressType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
 						} else if (t[i].equals("getPhoneNumber")) {
 							Object temp = SimpleCase(XTelephoneType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
+						} else if (t[i].equals("getOtherPhoneNumbers")) {
+							String t_str = "";
+							for (XTelephoneType v :  ((XLeaType) var).getOtherPhoneNumbers().getPhoneNumber()) {
+								t_str += (String)SimpleCase(XTelephoneType.class,t[i+2],v) + ",";
+							}
+							 
+							return t_str.substring(0, t_str.length()-1);
 						} else {
+							null_case(t);
 						}
 						break;
 					}
 					case "School": {
-						if (t[i].equals("getAddress")) {
-							Object temp = SimpleCase(XOrganizationAddressType.class,clazz,t[i],t[i+1],var);
-							++i;
-							return temp;
-						} else if (t[i].equals("getPhoneNumber")) {
-							Object temp = SimpleCase(XTelephoneType.class,clazz,t[i],t[i+1],var);
-							++i;
-							return temp;
+						if (t[i].equals("getOtherIds")) {
+							String t_str = "";
+							for (XOtherOrganizationIdType v :  ((XSchoolType) var).getOtherIds().getOtherId()) {
+								t_str += (String)SimpleCase(XOtherOrganizationIdType.class,t[i+2],v) + ",";
+							}
+							return t_str.substring(0, t_str.length()-1);
 						} else if (t[i].equals("getGradeLevels")) {
-							String temp_str = "\"";
+//							String temp_str = "\"";
+							String temp_str = "";
 							m = clazz.getMethod(t[i]);
 							Object t_obj = (m.invoke(var));
 							m = XGradeLevelListType.class.getMethod(t[i+1]);
@@ -243,47 +272,102 @@ public class DataReader {
 								temp_str += t_s + ", ";
 							}
 							
+//							if (temp_str.length() > 1) {
+//								temp_str = temp_str.substring(0,(temp_str.length()-2)) + "\"";
+//							} else {
+//								temp_str = "";
+//							}
+//							System.out.println("temp_str " + temp_str);
 							if (temp_str.length() > 1) {
-								temp_str = temp_str.substring(0,(temp_str.length()-2)) + "\"";
+								return temp_str.trim().substring(0,temp_str.trim().length()-1);
 							} else {
-								temp_str = "";
+								return "";
 							}
-							
-							return temp_str;
-						}else {
+						} else if (t[i].equals("getAddress")) {
+							Object temp = SimpleCase(XOrganizationAddressType.class,clazz,t[i],t[i+1],var);
+							 
+							return temp;
+						} else if (t[i].equals("getPhoneNumber")) {
+							Object temp = SimpleCase(XTelephoneType.class,clazz,t[i],t[i+1],var);
+							 
+							return temp;
+						} else if (t[i].equals("getOtherPhoneNumbers")) {
+							String t_str = "";
+							for (XTelephoneType v :  ((XSchoolType) var).getOtherPhoneNumbers().getPhoneNumber()) {
+								t_str += (String)SimpleCase(XTelephoneType.class,t[i+2],v) + ",";
+							}
+							 
+							return t_str.substring(0, t_str.length()-1);
+						} else {
+							null_case(t);
 						}
 						break;
 					}
 					case "Calendar": {
+						if (t[i].equals("getSessions")) {
+							String t_str = "";
+							for (XSessionType v :  ((XCalendarType) var).getSessions().getSessionList()) {
+								t_str += (String)SimpleCase(XSessionType.class,t[i+2],v) + ",";
+							}
+							return t_str.substring(0, t_str.length()-1);
+						} else {
+							null_case(t);
+						}
 						break;
 					}
 					case "Course": {
+						if (t[i].equals("getOtherIds")) {
+							String t_str = "";
+							for (XOtherCourseIdType v :  ((XCourseType) var).getOtherIds().getOtherId()) {
+								t_str += (String)SimpleCase(XOtherCourseIdType.class,t[i+2],v) + ",";
+							}			 
+							return t_str.substring(0, t_str.length()-1);
+						} else if (t[i].equals("getApplicableEducationLevels")) {
+							String t_str = "";
+							for (String v :  ((XCourseType) var).getApplicableEducationLevels().getApplicableEducationLevel()) {
+								t_str += v + ",";
+							}
+							return t_str.substring(0, t_str.length()-1);
+						} else {
+							null_case(t);
+						}
 						break;
 					}
 					case "Roster": {
-						if (t[i].equals("getStaffPersonReference") || t[i].equals("-staff")) {
+						if (t[i].equals("getMeetingTimes")) {
+							String t_str = "";
+							if(t[i+2].equals("getClassMeetingDays")) {
+								for (XMeetingTimeType v :  ((XRosterType) var).getMeetingTimes().getMeetingTime()) {
+									XDayListType v2 = v.getClassMeetingDays();
+									t_str += (String)SimpleCase(XDayListType.class,t[i+3],v2) + ",";
+								}
+							} else {
+								for (XMeetingTimeType v :  ((XRosterType) var).getMeetingTimes().getMeetingTime()) {
+									t_str += (String)SimpleCase(XMeetingTimeType.class,t[i+2],v) + ",";
+								}
+							}
+							return t_str.substring(0, t_str.length()-1);
+						} else if (t[i].equals("-staff")) {
 							String str = (String)XPersonReferenceType.class.getMethod("getRefId").invoke(XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var)));
 							String str2 = (String)clazz2.getMethod("getRefId").invoke(var2);
 							if (str2.equals(str)) {
-								if (t[i].equals("getStaffPersonReference")) {
-									XPersonReferenceType t_person = (XPersonReferenceType)XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var));
-									m = XPersonReferenceType.class.getMethod(t[i+1]);
+								if (t[i+1].equals("getStaffPersonReference")) {
+									XPersonReferenceType t_person = ((XRosterType) var).getPrimaryStaff().getStaffPersonReference();
+									m = XPersonReferenceType.class.getMethod(t[i+2]);
 									return m.invoke(t_person);
-								}
-								if (t[i].equals("-staff")) {
-									XStaffReferenceType t_person = (XStaffReferenceType)XStaffReferenceType.class.getMethod("getStaffPersonReference").invoke(clazz.getMethod("getPrimaryStaff").invoke(var));
+								} else {
+									XStaffReferenceType t_person = (XStaffReferenceType)clazz.getMethod("getPrimaryStaff").invoke(var);
 									m = XStaffReferenceType.class.getMethod(t[i+1]);
 									return m.invoke(t_person);
 								}
 							} else {
 								Boolean found = false;
-								for (XStaffReferenceType st : (List<XStaffReferenceType>)XStaffReferenceListType.class.getMethod("getOtherStaff").invoke(clazz.getMethod("getOtherStaffs").invoke(var))) {
+								for (XStaffReferenceType st : ((XRosterType) var).getOtherStaffs().getOtherStaff()) {
 									if (str2.equals(st.getStaffPersonReference().getRefId())) {
-										if (t[i].equals("getStaffPersonReference")) {
-											m = XPersonReferenceType.class.getMethod(t[i+1]);
+										if (t[i+1].equals("getStaffPersonReference")) {
+											m = XPersonReferenceType.class.getMethod(t[i+2]);
 			    							return (String)m.invoke(st.getStaffPersonReference());
-										}
-										if (t[i].equals("-staff")) {
+										} else {
 											m = XStaffReferenceType.class.getMethod(t[i+1]);
 			    							return (String)m.invoke(st);
 										}
@@ -293,78 +377,162 @@ public class DataReader {
 									return null;
 								}
 							}
-						} else if (t[i].equals("-student")) {
-							String str2 = (String)clazz2.getMethod("getRefId").invoke(var2);
-							boolean found = false;
-							for (XPersonReferenceType st : (List<XPersonReferenceType>)XStudentReferenceListType.class.getMethod("getStudentReference").invoke(clazz.getMethod("getStudents").invoke(var))) {
-								if (str2.equals(st.getRefId())) {
-									m = XPersonReferenceType.class.getMethod(t[i+1]);
-	    							return m.invoke(st);
+						} else if (t[i].equals("getStudents")) {
+							if (var2 != null) {
+								String str2 = (String)clazz2.getMethod("getRefId").invoke(var2);
+								boolean found = false;
+								for (XPersonReferenceType st : ((XRosterType) var).getStudents().getStudentReference()) {
+									if (str2.equals(st.getRefId())) {
+										m = XPersonReferenceType.class.getMethod(t[i+2]);
+		    							return m.invoke(st);
+									}
 								}
-							}
-							if (!found) {
-								return null;
+								if (!found) {
+									return null;
+								}
+							} else {
+								String t_str = "";
+								for (XPersonReferenceType v : ((XRosterType) var).getStudents().getStudentReference()) {
+									t_str += (String)SimpleCase(XPersonReferenceType.class,t[i+2],v) + ",";
+								}
+								return t_str.substring(0, t_str.length()-1);
 							}
 						} else {
+							null_case(t);
 						}
 						break;
 					}
 					case "Staff": {
 						if (t[i].equals("getName")) {
 							Object temp = SimpleCase(XPersonNameType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
+						} else if (t[i].equals("getOtherIds")) {
+							String t_str = "";
+							for (XOtherPersonIdType v :  ((XStaffType) var).getOtherIds().getOtherId()) {
+								t_str += (String)SimpleCase(XOtherPersonIdType.class,t[i+2],v) + ",";
+							}
+							 
+							return t_str.substring(0, t_str.length()-1);
 						} else if (t[i].equals("getEmail")) {
 							Object temp = SimpleCase(XEmailType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
+						} else if (t[i].equals("getPrimaryAssignment")) {
+							Object temp = SimpleCase(XStaffPersonAssignmentType.class,clazz,t[i],t[i+1],var);
+							 
+							return temp;
+						} else if (t[i].equals("getOtherAssignments")) {
+							String t_str = "";
+							for (XStaffPersonAssignmentType v :  ((XStaffType) var).getOtherAssignments().getStaffPersonAssignment()) {
+								t_str += (String)SimpleCase(XStaffPersonAssignmentType.class,t[i+2],v) + ",";
+							}
+							 
+							return t_str.substring(0,t_str.length()-1);
 						} else {
+							null_case(t);
 						}
 						break;
 					}
 					case "Student": {
 						if (t[i].equals("getName")) {
 							Object temp = SimpleCase(XPersonNameType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
+						} else if (t[i].equals("getOtherNames")) {
+							String t_str = "";
+							for (XPersonNameType v :  ((XStudentType) var).getOtherNames().getName()) {
+								t_str += (String)SimpleCase(XPersonNameType.class,t[i+2],v) + ",";
+							}
+							 
+							return t_str.substring(0, t_str.length()-1);
+						} else if (t[i].equals("getOtherIds")) {
+							String t_str = "";
+							for (XOtherPersonIdType v :  ((XStudentType) var).getOtherIds().getOtherId()) {
+								t_str += (String)SimpleCase(XOtherPersonIdType.class,t[i+2],v) + ",";
+							}
+							 
+							return t_str.substring(0, t_str.length()-1);
 						} else if (t[i].equals("getAddress")) {
 							Object temp = SimpleCase(XPersonAddressType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
 						} else if (t[i].equals("getPhoneNumber")) {
 							Object temp = SimpleCase(XTelephoneType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
+						} else if (t[i].equals("getOtherPhoneNumbers")) {
+							String t_str = "";
+							for (XTelephoneType v :  ((XStudentType) var).getOtherPhoneNumbers().getPhoneNumber()) {
+								t_str += (String)SimpleCase(XTelephoneType.class,t[i+2],v) + ",";
+							}
+							 
+							return t_str.substring(0, t_str.length()-1);
 						} else if (t[i].equals("getEmail")) {
 							Object temp = SimpleCase(XEmailType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
+						} else if (t[i].equals("getDemographics")) {
+							if (t[i+1].equals("getRaces")) {
+								String t_str = "";
+								for (XRaceType v : ((XStudentType) var).getDemographics().getRaces().getRace()) {
+									t_str += (String)SimpleCase(XRaceType.class,t[i+3],v) + ",";
+								}
+								 
+								return t_str.substring(0, t_str.length()-1);
+							} else {
+								
+							}
+							
 						} else if (t[i].equals("getEnrollment")) {
 							Object temp = SimpleCase(XEnrollmentType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
+						} else if (t[i].equals("getStudentContacts")) {
+							if (t[i+1].equals("getContactPersonRefId")) {
+								String t_str = "";
+								for (String v :  ((XStudentType) var).getStudentContacts().getContactPersonRefId()) {
+									t_str += (String)SimpleCase(String.class,t[i+2],v) + ",";
+								}
+								return t_str.substring(0, t_str.length()-1);
+							} else if (t[i+1].equals("getXContact")) {
+								String t_str = "";
+								for (XContactType v : ((XStudentType) var).getStudentContacts().getXContact()) {
+									t_str += SpecialCase(t, 2, XContactType.class, v, "Contact");
+								}
+								return t_str;
+							}
 						} else {
+							null_case(t);
 						}
 						break;
 					}
 					case "Contact": {
 						if (t[i].equals("getName")) {
 							Object temp = SimpleCase(XPersonNameType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
 						} else if (t[i].equals("getAddress")) {
 							Object temp = SimpleCase(XPersonAddressType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
 						} else if (t[i].equals("getPhoneNumber")) {
 							Object temp = SimpleCase(XTelephoneType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
+						} else if (t[i].equals("getOtherPhoneNumbers")) {
+							String t_str = "";
+							for (XTelephoneType v :  ((XContactType) var).getOtherPhoneNumbers().getPhoneNumber()) {
+								t_str += (String)SimpleCase(XTelephoneType.class,t[i+2],v) + ",";
+							}
+							 
+							return t_str.substring(0, t_str.length()-1);
 						} else if (t[i].equals("getEmail")) {
 							Object temp = SimpleCase(XEmailType.class,clazz,t[i],t[i+1],var);
-							++i;
+							 
 							return temp;
 						} else {
+							null_case(t);
 						}
 						break;
 					}
@@ -379,15 +547,34 @@ public class DataReader {
     	return null;
     }
     
+    private static <T> String DefVal(String data_type, String command, T var) {
+    	switch (data_type) {
+    	case "Roster" : {
+    		if (command.equals("getSchoolYear")) {
+    			XMLGregorianCalendar temp = ((XRosterType) var).getSchoolYear();
+				return Integer.toString(temp.getYear()-1);
+	    	}
+    		break;
+    	}
+    	default: {
+    		break;
+    	}
+    	}
+    	return null;
+    }
     
     private static <T> ArrayList<DataType> DRead(Class<T> clazz, ArrayList<ArrayList<String>> commands, T var, String data_type) {
     	ArrayList<DataType> data_point = new ArrayList<DataType>();
     	for (ArrayList<String> com : commands) {
 			Method m;
 			try {
+				String tm;
 				if (com.get(1).split(" ").length > 1) {
 					String[] t = com.get(1).split(" ");
 					DataType d = new DataType(data_type,com.get(0),com.get(1),SpecialCase(t,0,clazz,var,data_type)); // this line should associate the data pulled from the RICONE server with the user's function name
+					data_point.add(d);
+				} else if ((tm = DefVal(data_type,com.get(1),var)) != null) {
+					DataType d = new DataType(data_type,com.get(0),com.get(1),tm); // this line should associate the data pulled from the RICONE server with the user's function name
 					data_point.add(d);
 				} else {
 					m = clazz.getMethod(com.get(1));
@@ -396,7 +583,7 @@ public class DataReader {
 					data_point.add(d);
 				}
 			} catch (NoSuchMethodException e) {
-				System.err.println("160 - Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
+				System.err.println("399 - Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -414,32 +601,45 @@ public class DataReader {
     	for (ArrayList<String> com : commands) {
 			Method m;
 			try {
+				String tm;
 				if (com.get(1).split(" ").length > 1) {
 					String[] t = com.get(1).split(" ");
 					if (t[0].contains("-and")) {
 						String t_str = "";
-						for (int j=1; j < t.length; ++j) {
+						for (int j=0; j < t.length; ++j) {
 							String temp;
-							if ((temp = (String)SpecialCase(t,j,clazz,var,clazz2,var2,data_type)) != null) {
-								t_str += temp;
+							boolean done = false;
+							while (!t[j].contains("-and")) {
 								++j;
+								if (j >= t.length) {
+									done = true;
+									break;
+								}
+							}
+							if (done) {
+								break;
+							}
+							if ((temp = (String)SpecialCase(t,j+1,clazz,var,clazz2,var2,data_type)) != null) {
+								t_str += temp;
 							} else {
-								m = XRosterType.class.getMethod(t[j]);
+								m = XRosterType.class.getMethod(t[j+1]);
 								try {
 									t_str += m.invoke(var);
 								} catch (ClassCastException e) {
-									System.err.println("420 - Couldnt recognize " + t[j]);	
+									System.err.println("420 - Couldnt recognize " + t[j+1]);	
 								}
 							}
 							t_str += "_";
 						}
 						DataType d = new DataType(data_type,com.get(0),com.get(1),t_str.substring(0,t_str.length()-1)); // this line should associate the data pulled from the RICONE server with the user's function name
 						data_point.add(d);
-						
 					} else {
 						DataType d = new DataType(data_type,com.get(0),com.get(1),SpecialCase(t,0,clazz,var,clazz2,var2,data_type)); // this line should associate the data pulled from the RICONE server with the user's function name
 						data_point.add(d);
 					}
+				} else if ((tm = DefVal(data_type,com.get(1),var)) != null) {
+					DataType d = new DataType(data_type,com.get(0),com.get(1),tm); // this line should associate the data pulled from the RICONE server with the user's function name
+					data_point.add(d);
 				} else {
 					m = XRosterType.class.getMethod(com.get(1));
 					try {
@@ -451,8 +651,9 @@ public class DataReader {
 					}
 				}
 			} catch (NoSuchMethodException e) {
-				System.err.println("607 - Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
+				System.err.println("454 - Couldnt find ." + com.get(1) + "() as a callable method. Check the spelling?");
 				e.printStackTrace();
+				System.exit(1);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -464,140 +665,6 @@ public class DataReader {
     	return null;    	
     }
     
-    
-    private static <T> boolean GradeCheck(String data_type, T var, XPress xPress) {
-    	if (grade_nums == null) {
-    		return true;
-    	}
-    	switch (data_type) {
-			case "Lea": {
-				break;
-			}
-			case "School": {
-				if (grade_nums != null) {
-					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-						for (String given_grade : ((XSchoolType) var).getGradeLevels().getGradeLevel()) {
-							if (desired_grade.equals(given_grade)) {
-								return true;
-							}
-						}
-					}
-				}
-				break;
-			}
-			case "Calendar": {
-				break;
-			}
-			case "Course": {
-					if (grade_nums != null) { // 
-						for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-							for (String given_grade : ((XCourseType) var).getApplicableEducationLevels().getApplicableEducationLevel()) {
-								if (desired_grade.equals(given_grade)) {
-									return true;
-								}
-							}
-						}
-					}
-				break;
-			}
-			case "Roster": {
-				if (grade_nums != null) { // 
-					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-						List<XCourseType> dat;
-							if ((dat = xPress.getXCoursesByXRoster(((XRosterType) var).getRefId()).getData()) != null) {
-								for (XCourseType temp : dat) { // get the course associated with the roster (needed to pull grade level information
-									for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-										if (desired_grade.equals(given_grade)) {
-											return true;
-										}
-									}
-								}
-							}
-						} 
-				}
-				break;
-			}
-			case "Staff": {
-				if (grade_nums != null) { // 
-					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-						List<XRosterType> dat;
-						if ((dat = xPress.getXRostersByXStaff(((XStaffType) var).getRefId()).getData()) != null) {    										
-							for (XRosterType roster : dat) {		
-								List<XCourseType> dat2;
-								if ((dat2 = xPress.getXCoursesByXRoster(roster.getRefId()).getData()) != null) {
-									for (XCourseType temp : dat2) { // get the course associated with the roster (needed to pull grade level information
-										for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-											if (desired_grade.equals(given_grade)) {
-												return true;
-											}
-										}
-									}
-								}
-							} 
-						}
-					}
-				}
-				break;
-			}
-			case "Student": {
-				if (grade_nums != null) { // 
-					for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-							/*List<XRosterType> dat;
-							if ((dat = xPress.getXRostersByXStudent(var.getRefId()).getData()) != null) {
-								for (XRosterType roster : dat) {		
-									if (!grade_match) {
-										List<XCourseType> dat2;
-										if ((dat2=xPress.getXCoursesByXRoster(roster.getRefId()).getData()) != null) {
-										for (XCourseType temp : dat2) { // get the course associated with the roster (needed to pull grade level information
-											System.out.println(temp);
-											if (!grade_match) {
-												for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-													System.out.println(given_grade);
-													if (desired_grade.equals(given_grade)) {
-														grade_match = true;
-														System.out.println("breaking");
-														break;
-													}
-												}
-											}
-										}
-										}
-									}
-								}
-							}*/
-								
-						String given_grade = ((XStudentType) var).getEnrollment().getGradeLevel();
-						if (desired_grade.equals(given_grade)) {
-							return true;
-						}
-					}
-				}
-				break;
-			}
-			case "Contact": {
-			if (grade_nums != null) { // 
-				for (String desired_grade : grade_nums) { // nested for loops to check if the given grades fall into the grades this particular school offers
-					for (XStudentType student : xPress.getXStudentsByXContact(((XContactType) var).getRefId()).getData()) {										
-						for (XRosterType roster : xPress.getXRostersByXStudent(student.getRefId()).getData()) {		
-							for (XCourseType temp : xPress.getXCoursesByXRoster(roster.getRefId()).getData()) { // get the course associated with the roster (needed to pull grade level information
-								for (String given_grade : temp.getApplicableEducationLevels().getApplicableEducationLevel()) {
-									if (desired_grade.equals(given_grade)) {
-										return true;											}
-										}
-									}
-								}
-							}
-						}
-					}
-				break;
-			}
-			default: {
-				System.err.println("hitting default case. thats a problem... Type is: " + data_type);
-				break;
-			}
-    	}
-    	return false;
-	}
    
     
     private static void PrintPercent(int num, int size, int refid_size, int refid_num, int num_endpoints, int endpoint_num, int num_files, int file_num) {
@@ -629,9 +696,9 @@ public class DataReader {
     	
     	
     	if (ref_type.equals("Lea")) {
-    		int refid_size = refid.length;
+    		int refid_size = grade_assoc.size();
     		int refid_num = 0;
-    		for (String rid : refid) {
+    		for (String rid : grade_assoc.keySet()) {
     			switch (data_type) {
     				case "Lea": {
     					XLeaType var = xPress.getXLea(rid).getData();
@@ -645,7 +712,7 @@ public class DataReader {
     						for (XSchoolType var : xPress.getXSchoolsByXLea(rid).getData()) { // loop through all schools in the district
     							PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 		    					++num;	 
-		    					boolean grade_match = GradeCheck(data_type,var,xPress);
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
 	    						if (grade_match) {
 	    	    					list.add(DRead(XSchoolType.class, commands, var, data_type));
 	    						}
@@ -654,25 +721,29 @@ public class DataReader {
     					break;
     				}
     				case "Calendar": {
-    					int size = xPress.getXCalendarsByXLea(rid).getData().size();
-						int num = starting_num;
-    					for (XCalendarType var : xPress.getXCalendarsByXLea(rid).getData()) { // loop through all calendars in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;
-    						list.add(DRead(XCalendarType.class, commands, var, data_type));
+    					if (xPress.getXCalendarsByXLea(rid).getData() != null) {
+	    					int size = xPress.getXCalendarsByXLea(rid).getData().size();
+							int num = starting_num;
+	    					for (XCalendarType var : xPress.getXCalendarsByXLea(rid).getData()) { // loop through all calendars in the district
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;
+	    						list.add(DRead(XCalendarType.class, commands, var, data_type));
+	    					}
     					}
     					break;
     				}
     				case "Course": {
-    					int size = xPress.getXCoursesByXLea(rid).getData().size();
-						int num = starting_num;
-						for (XCourseType var : xPress.getXCoursesByXLea(rid).getData()) { // loop through all courses in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;
-	    					boolean grade_match = GradeCheck(data_type,var,xPress);
-    						if (grade_match) {
-    	    					list.add(DRead(XCourseType.class, commands, var, data_type));
-    						}
+    					if (xPress.getXCoursesByXLea(rid).getData() != null) {
+							int size = xPress.getXCoursesByXLea(rid).getData().size();
+							int num = starting_num;
+							for (XCourseType var : xPress.getXCoursesByXLea(rid).getData()) { // loop through all courses in the district
+								PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+								if (grade_match) {
+			    					list.add(DRead(XCourseType.class, commands, var, data_type));
+								}
+							}
     					}
     					break;
     				}
@@ -685,7 +756,7 @@ public class DataReader {
 	    							PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    						}
 	    						++num;	    						
-	    						boolean grade_match = GradeCheck(data_type,var,xPress);
+	    						boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
 	    						if (grade_match) {
 	    							if (commands.get(0).get(1).contains("-and")) {
 	    								if (commands.get(0).get(1).contains("-andSTAFF")) {
@@ -720,43 +791,49 @@ public class DataReader {
     					break;
     				}
     				case "Staff": {
-    					int size = xPress.getXStaffsByXLea(rid).getData().size();
-						int num = starting_num;
-						for (XStaffType var : xPress.getXStaffsByXLea(rid).getData()) { // loop through all staffs in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;	 
-	    					boolean grade_match = GradeCheck(data_type,var,xPress);
-	    					if (grade_match) {
-    	    					list.add(DRead(XStaffType.class, commands, var, data_type));
-    						}
+    					if (xPress.getXStaffsByXLea(rid).getData() != null) {
+	    					int size = xPress.getXStaffsByXLea(rid).getData().size();
+							int num = starting_num;
+							for (XStaffType var : xPress.getXStaffsByXLea(rid).getData()) { // loop through all staffs in the district
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;	 
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+		    					if (grade_match) {
+	    	    					list.add(DRead(XStaffType.class, commands, var, data_type));
+	    						}
+	    					}
     					}
     					break;
     				}
     				case "Student": {
-    					int size = xPress.getXStudentsByXLea(rid).getData().size();
-						int num = starting_num;
-						for (XStudentType var : xPress.getXStudentsByXLea(rid).getData()) { // loop through all students in the district
-    						if (num%5==0) {
-								PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-							}
-	    					++num;	
-	    					boolean grade_match = GradeCheck(data_type,var,xPress);
-    						if (grade_match) {
-    	    					list.add(DRead(XStudentType.class, commands, var, data_type));
-    						}
+    					if (xPress.getXStudentsByXLea(rid).getData() != null) {
+	    					int size = xPress.getXStudentsByXLea(rid).getData().size();
+							int num = starting_num;
+							for (XStudentType var : xPress.getXStudentsByXLea(rid).getData()) { // loop through all students in the district
+	    						if (num%5==0) {
+									PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+								}
+		    					++num;	
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+	    						if (grade_match) {
+	    	    					list.add(DRead(XStudentType.class, commands, var, data_type));
+	    						}
+	    					}
     					}
     					break;
     				}
     				case "Contact": {
-    					int size = xPress.getXContactsByXLea(rid).getData().size();
-						int num = starting_num;
-						for (XContactType var : xPress.getXContactsByXLea(rid).getData()) { // loop through all contacts in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;
-	    					boolean grade_match = GradeCheck(data_type,var,xPress);
-    						if (grade_match) {
-    	    					list.add(DRead(XContactType.class, commands, var, data_type));
-    						}
+    					if (xPress.getXContactsByXLea(rid).getData() != null) { 
+	    					int size = xPress.getXContactsByXLea(rid).getData().size();
+							int num = starting_num;
+							for (XContactType var : xPress.getXContactsByXLea(rid).getData()) { // loop through all contacts in the district
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+	    						if (grade_match) {
+	    	    					list.add(DRead(XContactType.class, commands, var, data_type));
+	    						}
+	    					}
     					}
     					break;
     				}
@@ -769,48 +846,56 @@ public class DataReader {
     		}
     	}
     	if (ref_type.equals("School")) {
-    		int refid_size = refid.length;
+    		int refid_size = grade_assoc.size();
     		int refid_num = 0;
-    		for (String rid : refid) {
+    		for (String rid : grade_assoc.keySet()) {
     			switch (data_type) {
     				case "Lea": {
-    					int size = xPress.getXLeasByXSchool(rid).getData().size();
-						int num = starting_num;
-						for (XLeaType var : xPress.getXLeasByXSchool(rid).getData()) {
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;
-    						list.add(DRead(XLeaType.class, commands, var, data_type));
+    					if (xPress.getXLeasByXSchool(rid).getData() != null) {
+	    					int size = xPress.getXLeasByXSchool(rid).getData().size();
+							int num = starting_num;
+							for (XLeaType var : xPress.getXLeasByXSchool(rid).getData()) {
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;
+	    						list.add(DRead(XLeaType.class, commands, var, data_type));
+	    					}
     					}
     					break;
     				}
     				case "School": {
-    					XSchoolType var = xPress.getXSchool(rid).getData();
-    					boolean grade_match = GradeCheck(data_type,var,xPress);
-    					if (grade_match) {
-        					list.add(DRead(XSchoolType.class, commands, var, data_type));
+    					if (xPress.getXSchool(rid).getData() != null) {
+	    					XSchoolType var = xPress.getXSchool(rid).getData();
+	    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+	    					if (grade_match) {
+	        					list.add(DRead(XSchoolType.class, commands, var, data_type));
+	    					}
     					}
     					break;
     				}
     				case "Calendar": {
-    					int size = xPress.getXCalendarsByXSchool(rid).getData().size();
-						int num = 0;
-						for (XCalendarType var : xPress.getXCalendarsByXSchool(rid).getData()) { // loop through all calendars in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;	
-    						list.add(DRead(XCalendarType.class, commands, var, data_type));
+    					if (xPress.getXCalendarsByXSchool(rid).getData() != null) {
+	    					int size = xPress.getXCalendarsByXSchool(rid).getData().size();
+							int num = 0;
+							for (XCalendarType var : xPress.getXCalendarsByXSchool(rid).getData()) { // loop through all calendars in the district
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;	
+	    						list.add(DRead(XCalendarType.class, commands, var, data_type));
+	    					}
     					}
     					break;
     				}
     				case "Course": {
-    					int size = xPress.getXCoursesByXSchool(rid).getData().size();
-						int num = starting_num;
-						for (XCourseType var : xPress.getXCoursesByXSchool(rid).getData()) { // loop through all courses in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;
-	    					boolean grade_match = GradeCheck(data_type,var,xPress);
-    						if (grade_match) {
-    							list.add(DRead(XCourseType.class, commands, var, data_type));
-    						}
+    					if (xPress.getXCoursesByXSchool(rid).getData() != null) {
+	    					int size = xPress.getXCoursesByXSchool(rid).getData().size();
+							int num = starting_num;
+							for (XCourseType var : xPress.getXCoursesByXSchool(rid).getData()) { // loop through all courses in the district
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+	    						if (grade_match) {
+	    							list.add(DRead(XCourseType.class, commands, var, data_type));
+	    						}
+	    					}
     					}
     					break;
     				}
@@ -823,7 +908,7 @@ public class DataReader {
 	    							PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
 	    						}
 	    						++num;	    						
-	    						boolean grade_match = GradeCheck(data_type,var,xPress);
+	    						boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
 	    						if (grade_match) {
 	    							if (commands.get(0).get(1).contains("-and")) {
 	    								if (commands.get(0).get(1).contains("-andSTAFF")) {
@@ -858,41 +943,47 @@ public class DataReader {
     					break;
     					}
     				case "Staff": {
-    					int size = xPress.getXStaffsByXSchool(rid).getData().size();
-						int num = starting_num;
-						for (XStaffType var : xPress.getXStaffsByXSchool(rid).getData()) { // loop through all staffs in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;
-	    					boolean grade_match = GradeCheck(data_type,var,xPress);
-    						if (grade_match) {
-    							list.add(DRead(XStaffType.class, commands, var, data_type));
-    						}
+    					if (xPress.getXStaffsByXSchool(rid).getData() != null) {
+	    					int size = xPress.getXStaffsByXSchool(rid).getData().size();
+							int num = starting_num;
+							for (XStaffType var : xPress.getXStaffsByXSchool(rid).getData()) { // loop through all staffs in the district
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+	    						if (grade_match) {
+	    							list.add(DRead(XStaffType.class, commands, var, data_type));
+	    						}
+	    					}
     					}
     					break;
     				}
     				case "Student": {
-    					int size = xPress.getXStudentsByXSchool(rid).getData().size();
-						int num = starting_num;
-						for (XStudentType var : xPress.getXStudentsByXSchool(rid).getData()) { // loop through all students in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;
-	    					boolean grade_match = GradeCheck(data_type,var,xPress);
-    						if (grade_match) {
-    							list.add(DRead(XStudentType.class, commands, var, data_type));
-    						}
+    					if (xPress.getXStudentsByXSchool(rid).getData() != null) {
+	    					int size = xPress.getXStudentsByXSchool(rid).getData().size();
+							int num = starting_num;
+							for (XStudentType var : xPress.getXStudentsByXSchool(rid).getData()) { // loop through all students in the district
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+	    						if (grade_match) {
+	    							list.add(DRead(XStudentType.class, commands, var, data_type));
+	    						}
+	    					}
     					}
     					break;
     				}
     				case "Contact": {
-    					int size = xPress.getXContactsByXSchool(rid).getData().size();
-						int num = starting_num;
-						for (XContactType var : xPress.getXContactsByXSchool(rid).getData()) { // loop through all contacts in the district
-    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
-	    					++num;
-	    					boolean grade_match = GradeCheck(data_type,var,xPress);
-    						if (grade_match) {
-    							list.add(DRead(XContactType.class, commands, var, data_type));
-    						}
+    					if (xPress.getXContactsByXSchool(rid).getData() != null) {
+	    					int size = xPress.getXContactsByXSchool(rid).getData().size();
+							int num = starting_num;
+							for (XContactType var : xPress.getXContactsByXSchool(rid).getData()) { // loop through all contacts in the district
+	    						PrintPercent(num,size,refid_size,refid_num,num_endpoints,endpoint_num,num_files,file_num);
+		    					++num;
+		    					boolean grade_match = GradeChecker.GradeCheck(data_type,var,xPress,grade_assoc.get(rid));
+	    						if (grade_match) {
+	    							list.add(DRead(XContactType.class, commands, var, data_type));
+	    						}
+	    					}
     					}
     					break;
     				}

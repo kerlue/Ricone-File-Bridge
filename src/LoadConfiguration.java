@@ -101,7 +101,7 @@ public class LoadConfiguration extends Configuration {
  	     authUrl = getTextContent("auth_url");
  	     filterBy = getTextContent("filter_by");
  	     filterRefid = getFilterContent("filter_refid");
- 	     filterGrades = getFilterContent("filter_grades");
+ 	     filterGrades = getFilterContent2("filter_grades");
  	     textMode = getTextContent("text_mode").contains("true");
     	 
           if(!(outputSchema.matches("csv")|| 
@@ -202,6 +202,23 @@ private String[] getFilterContent(String tagId) {
 		}
 		 
 	}
+
+private String[][] getFilterContent2(String tagId) {
+	
+	try{
+		String[] t = document.getElementsByTagName(tagId).item(0).getTextContent().trim().split(";");
+		String[][] t2 = new String[t.length][];
+		for (int i=0; i < t.length; ++i) {
+			t2[i] = t[i].split(",");
+		}
+		return (t2);
+		
+	}catch(Exception e){
+				
+		return null;
+	}
+	 
+}
 	
 	 private File getWorkingDir() {
 	    	

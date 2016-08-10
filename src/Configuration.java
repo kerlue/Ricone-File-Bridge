@@ -35,7 +35,7 @@ public abstract class Configuration {
 	 protected boolean textMode;
 	 protected String filterBy;
 	 protected String[] filterRefid;
-	 protected String[] filterGrades;
+	 protected String[][] filterGrades;
 
 	/**
 	 * @param args void.
@@ -157,7 +157,7 @@ public abstract class Configuration {
    		return this.filterRefid;
    	}
      
-     public String[] getFilterGrades() {
+     public String[][] getFilterGrades() {
     	 if (this.filterGrades.length > 0) {
     	   		return this.filterGrades;
     	 } else {
