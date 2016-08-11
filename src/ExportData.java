@@ -109,7 +109,6 @@ public class ExportData {
 
 	private File setupOutputPath(Configuration config) {
 
-				
 		String outputPath = "";
 		
 		if (config.getOutputExport().matches(GlobalUtilities.LOCAL)){
@@ -122,36 +121,25 @@ public class ExportData {
 		
 		File file = new File(outputPath+outputFolderTitle);
 		
-		while(file.exists()){
-			System.out.println(""+file.toString());
-			System.out.print(deleteDirectory(file)+"--->");
+		if(file.exists()){
+			deleteDirectory(file);
+		}else{
+			file.mkdirs();
 		}
 		
-		if (!file.mkdirs()) {
-			GlobalUtilities.logError("Failed to create folder");
-			System.exit(1);
-			
-			return null; 
-			
-		}
- 
 		GlobalUtilities.logInfo(file.getAbsolutePath()+" created sucessfully ");
 		return file;
 		
 	}
 	
-	static public boolean deleteDirectory(File path) {
+	static public void deleteDirectory(File path) {
 	    if (path.exists()) {
 	        File[] files = path.listFiles();
 	        for (int i = 0; i < files.length; i++) {
-	            if (files[i].isDirectory()) {
-	                deleteDirectory(files[i]);
-	            } else {
-	                files[i].delete();
+	               files[i].delete();
 	            }
 	        }
-	    }
-	    return (path.delete());
+	    
 	}
 	
 	public static void sftpUploader(String path, String user, String password, String port, String srcDir) {
