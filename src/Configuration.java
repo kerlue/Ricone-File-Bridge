@@ -1,9 +1,3 @@
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.json.JSONObject;
-import org.w3c.dom.Node;
 
 /**
  * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
@@ -12,6 +6,13 @@ import org.w3c.dom.Node;
  * Filename		Configuration.java
  */
 
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONObject;
+import org.w3c.dom.Node;
 
 public abstract class Configuration {
 	
