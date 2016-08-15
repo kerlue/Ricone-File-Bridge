@@ -1,3 +1,12 @@
+
+/**
+ * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
+ * @version     1.0
+ * @since       Jul 7, 2016
+ * Filename		GenerateXmlFile.java
+ */
+
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
