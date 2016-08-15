@@ -24,40 +24,10 @@ import com.jcraft.jsch.Session;
 
 
 public class ExportData {
-/*
-	public ExportData(Configuration config, GetDataFromApiTest data) {
-		
-		File file = setupOutputPath(config);
-	 
-		switch(config.getOutputSchema()){
-		     case GlobalUtilities.CSV: 
-		    	 //new GenerateCsvFile(config,file,data);
-			 break;
-			 
-		     case GlobalUtilities.XML: 
-		    	 //TODO: create xml output
-			 break;
-			 
-		     case GlobalUtilities.JSON: 
-		    	 //TODO: create JSON output
-			 break;
-			 
-		 }
 	
-		
-		if(config.getOutputExport().matches(GlobalUtilities.SFTP)){
-			pushFileToSftpServer(file.getAbsolutePath(), config);
-		}
-		
-		else if (config.getOutputExport().matches(GlobalUtilities.LOCAL)
-				&& config.isZipEnabled() == true){
-			zipFileOnly(file.getAbsolutePath());
-		}
-		
-	}
-*/	
 	public ExportData(Configuration config, ArrayList<Data> data) {
 		
+		// create output directory
 		File file = setupOutputPath(config);
 	 
 		switch(config.getOutputSchema()){
@@ -81,11 +51,13 @@ public class ExportData {
 		
 		else if (config.getOutputExport().matches(GlobalUtilities.LOCAL)
 				&& config.isZipEnabled() == true){
+			// file is saved locally. Only need to create zip version		
 			zipFileOnly(file.getAbsolutePath());
 		}
 		
 	}
 
+         
 	private void zipFileOnly(String outputPath) {
 		try {
 			FolderZiper.zipFolder(outputPath, outputPath+".zip");
@@ -115,15 +87,18 @@ public class ExportData {
 			outputPath = (config.getOutputPath().isEmpty()) ? "": config.getOutputPath()+File.separator;
 		}
 		
-		
+		// If no title is set then destination folder will be called "RicOne Data"
 		String outputFolderTitle = (config.getOutputFolderTitle().isEmpty()) 
 				? "RicOne Data":config.getOutputFolderTitle();
 		
+		// create the new output file
 		File file = new File(outputPath+outputFolderTitle);
 		
+		//If file exists then remove old files.
 		if(file.exists()){
-			deleteDirectory(file);
+			deleteOldFiles(file);
 		}else{
+			// If file does not exists create new directory.
 			file.mkdirs();
 		}
 		
@@ -132,7 +107,7 @@ public class ExportData {
 		
 	}
 	
-	static public void deleteDirectory(File path) {
+	static public void deleteOldFiles(File path) {
 	    if (path.exists()) {
 	        File[] files = path.listFiles();
 	        for (int i = 0; i < files.length; i++) {
