@@ -1,3 +1,12 @@
+
+/**
+ * @author      Schillaci "Dwayne" McInnis <dmcinnis@lhric.org>
+ * @version     1.0
+ * @since       Aug 7, 2016
+ * Filename		GenerateJSONFile.java
+ */
+
+
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
