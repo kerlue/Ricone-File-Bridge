@@ -45,19 +45,25 @@ public class ExportData {
 			 
 		 }
 		
+		// send file to SFTP server
 		if(config.getOutputExport().matches(GlobalUtilities.SFTP)){
 			pushFileToSftpServer(file.getAbsolutePath(), config);
 		}
 		
 		else if (config.getOutputExport().matches(GlobalUtilities.LOCAL)
 				&& config.isZipEnabled() == true){
-			// file is saved locally. Only need to create zip version		
+			// file is saved locally. Only need to create a zip version.		
 			zipFileOnly(file.getAbsolutePath());
 		}
 		
 	}
 
-         
+     
+
+    /**
+     * Zip local files if required. 
+    */
+	
 	private void zipFileOnly(String outputPath) {
 		try {
 			FolderZiper.zipFolder(outputPath, outputPath+".zip");
@@ -67,6 +73,10 @@ public class ExportData {
 		}
 	}
 
+	
+	 /**
+     * Zip local files and push to server. 
+    */
 	private void pushFileToSftpServer(String outputPath, Configuration config) {
 		if(FolderZiper.zipFolder(outputPath, outputPath+".zip")){
 			// folder zipped successfully 
